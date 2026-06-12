@@ -172,7 +172,7 @@ pub const Optimizer = struct {
                 defer self.allocator.free(left_str);
                 const right_str = try right.toString(self.allocator);
                 defer self.allocator.free(right_str);
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(self.allocator);
                 try result.appendSlice(self.allocator, left_str);
                 try result.appendSlice(self.allocator, right_str);

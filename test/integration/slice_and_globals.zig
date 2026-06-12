@@ -19,9 +19,7 @@ const value = vibe_jinja.value;
 // ============================================================================
 
 test "slice: messages[1:] - skip first element" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -53,9 +51,7 @@ test "slice: messages[1:] - skip first element" {
 }
 
 test "slice: messages[:-1] - skip last element" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -86,9 +82,7 @@ test "slice: messages[:-1] - skip last element" {
 }
 
 test "slice: messages[1:3] - range slice" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -120,9 +114,7 @@ test "slice: messages[1:3] - range slice" {
 }
 
 test "slice: messages[::2] - step slice (every other)" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -154,9 +146,7 @@ test "slice: messages[::2] - step slice (every other)" {
 }
 
 test "slice: string slicing" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -189,9 +179,7 @@ test "slice: string slicing" {
 // ============================================================================
 
 test "loop.cycle: alternating odd/even" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -225,9 +213,7 @@ test "loop.cycle: alternating odd/even" {
 }
 
 test "loop.cycle: three values" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -265,9 +251,7 @@ test "loop.cycle: three values" {
 // ============================================================================
 
 test "loop.changed: detect category changes" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -307,9 +291,7 @@ test "loop.changed: detect category changes" {
 // ============================================================================
 
 test "cycler global: creates cycler object" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -331,9 +313,7 @@ test "cycler global: creates cycler object" {
 }
 
 test "joiner global: creates joiner object" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -355,9 +335,7 @@ test "joiner global: creates joiner object" {
 }
 
 test "namespace global: creates namespace object" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -387,9 +365,7 @@ test "namespace global: creates namespace object" {
 test "variable reassignment with slice - skip first element" {
     // Tests the pattern: {% set messages = messages[1:] %}
     // Used in Llama 3.2 chat templates to skip system message
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -414,9 +390,7 @@ test "variable reassignment with slice - skip first element" {
 }
 
 test "variable reassignment with slice - skip last element" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -443,9 +417,7 @@ test "variable reassignment with slice - skip last element" {
 test "variable reassignment preserves original during evaluation" {
     // Ensures items[1:] is evaluated using original value before reassignment
     // This tests that RHS is fully evaluated before assignment
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -471,9 +443,7 @@ test "variable reassignment preserves original during evaluation" {
 
 test "variable reassignment with external list" {
     // Tests reassignment when the list comes from template context (like messages)
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -535,9 +505,7 @@ test "variable reassignment with external list" {
 
 test "multiple variable reassignments in sequence" {
     // Tests multiple reassignments to the same variable
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -569,9 +537,7 @@ test "multiple variable reassignments in sequence" {
 // ============================================================================
 
 test "strftime_now: date format %Y-%m-%d" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -600,9 +566,7 @@ test "strftime_now: date format %Y-%m-%d" {
 }
 
 test "strftime_now: time format %H:%M:%S" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -633,9 +597,7 @@ test "strftime_now: time format %H:%M:%S" {
 }
 
 test "strftime_now: callable and returns value" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -661,9 +623,7 @@ test "strftime_now: callable and returns value" {
 }
 
 test "strftime_now: month abbreviation %b" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -689,9 +649,7 @@ test "strftime_now: month abbreviation %b" {
 }
 
 test "strftime_now: full month name %B" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -713,8 +671,8 @@ test "strftime_now: full month name %B" {
     try testing.expect(std.ascii.isUpper(result[0]));
     // Check it's one of the valid month names
     const valid_months = [_][]const u8{
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December",
+        "January", "February", "March",     "April",   "May",      "June",
+        "July",    "August",   "September", "October", "November", "December",
     };
     var found = false;
     for (valid_months) |month| {
@@ -727,9 +685,7 @@ test "strftime_now: full month name %B" {
 }
 
 test "strftime_now: weekday abbreviation %a" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -760,9 +716,7 @@ test "strftime_now: weekday abbreviation %a" {
 }
 
 test "strftime_now: full weekday name %A" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -795,9 +749,7 @@ test "strftime_now: full weekday name %A" {
 }
 
 test "strftime_now: 12-hour format %I with AM/PM %p" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -823,9 +775,7 @@ test "strftime_now: 12-hour format %I with AM/PM %p" {
 }
 
 test "strftime_now: year without century %y" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -848,9 +798,7 @@ test "strftime_now: year without century %y" {
 }
 
 test "strftime_now: day of year %j" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -878,9 +826,7 @@ test "strftime_now: day of year %j" {
 }
 
 test "strftime_now: weekday as decimal %w" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -904,9 +850,7 @@ test "strftime_now: weekday as decimal %w" {
 }
 
 test "strftime_now: literal percent %%" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -926,9 +870,7 @@ test "strftime_now: literal percent %%" {
 }
 
 test "strftime_now: combined date/time format" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -955,9 +897,7 @@ test "strftime_now: combined date/time format" {
 }
 
 test "strftime_now: human readable format" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();

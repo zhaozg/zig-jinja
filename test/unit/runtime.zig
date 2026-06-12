@@ -7,9 +7,7 @@ const context = vibe_jinja.context;
 const value = vibe_jinja.value;
 
 test "runtime context init" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -25,16 +23,14 @@ test "runtime context init" {
 }
 
 test "runtime context resolve" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
-    
+
     var test_val = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer test_val.deinit(allocator);
     try vars.put(try allocator.dupe(u8, "test"), test_val);
@@ -52,9 +48,7 @@ test "runtime context resolve" {
 }
 
 test "runtime context set and get" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -78,16 +72,14 @@ test "runtime context set and get" {
 }
 
 test "runtime context parent resolution" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     var parent_vars = std.StringHashMap(value.Value).init(allocator);
     defer parent_vars.deinit();
-    
+
     var parent_val = value.Value{ .string = try allocator.dupe(u8, "parent") };
     defer parent_val.deinit(allocator);
     try parent_vars.put(try allocator.dupe(u8, "parent_var"), parent_val);
@@ -110,9 +102,7 @@ test "runtime context parent resolution" {
 }
 
 test "runtime template reference init" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -136,9 +126,7 @@ test "runtime template reference init" {
 }
 
 test "runtime undefined behavior lenient" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -163,9 +151,7 @@ test "runtime undefined behavior lenient" {
 // ============================================================================
 
 test "runtime loop context basic" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -192,9 +178,7 @@ test "runtime loop context basic" {
 // ============================================================================
 
 test "runtime context variable shadowing" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -202,7 +186,7 @@ test "runtime context variable shadowing" {
     // Parent context with a variable
     var parent_vars = std.StringHashMap(value.Value).init(allocator);
     defer parent_vars.deinit();
-    
+
     var parent_val = value.Value{ .string = try allocator.dupe(u8, "parent_value") };
     defer parent_val.deinit(allocator);
     try parent_vars.put(try allocator.dupe(u8, "x"), parent_val);
@@ -236,9 +220,7 @@ test "runtime context variable shadowing" {
 // ============================================================================
 
 test "runtime undefined debug behavior" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -263,9 +245,7 @@ test "runtime undefined debug behavior" {
 // ============================================================================
 
 test "runtime context globals access" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -293,9 +273,7 @@ test "runtime context globals access" {
 // ============================================================================
 
 test "runtime context multiple variables" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();

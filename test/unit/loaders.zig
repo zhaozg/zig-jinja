@@ -4,10 +4,9 @@ const vibe_jinja = @import("vibe_jinja");
 const loaders = vibe_jinja.loaders;
 const exceptions = vibe_jinja.exceptions;
 
+const cwd_dir = std.Io.Dir.cwd();
 test "loader filesystem loader init" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var searchpath = [_][]const u8{"test/templates"};
     var loader = try loaders.FileSystemLoader.init(allocator, &searchpath);
@@ -18,19 +17,19 @@ test "loader filesystem loader init" {
 }
 
 test "loader filesystem loader load existing file" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
+    var test_io_thr = std.Io.Threaded.init(allocator, .{});
+    const test_io = test_io_thr.io();
 
     // Create a temporary test file
     const test_dir = "test/templates";
-    try std.fs.cwd().makePath(test_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    try cwd_dir.createDirPath(test_io, test_dir);
+    defer cwd_dir.deleteTree(test_io, test_dir) catch {};
 
     const test_file = "test/templates/test.jinja";
-    const file = try std.fs.cwd().createFile(test_file, .{});
-    try file.writeAll("Hello {{ name }}!");
-    file.close();
+    const file = try cwd_dir.createFile(test_io, test_file, .{});
+    try file.writeStreamingAll(test_io, "Hello {{ name }}!");
+    file.close(test_io);
 
     const searchpath = [_][]const u8{"test/templates"};
     var loader = try loaders.FileSystemLoader.init(allocator, &searchpath);
@@ -43,9 +42,7 @@ test "loader filesystem loader load existing file" {
 }
 
 test "loader filesystem loader load non-existent file" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const searchpath = [_][]const u8{"test/templates"};
     var loader = try loaders.FileSystemLoader.init(allocator, &searchpath);
@@ -56,9 +53,7 @@ test "loader filesystem loader load non-existent file" {
 }
 
 test "loader dict loader init" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var mapping = std.StringHashMap([]const u8).init(allocator);
     // Note: DictLoader takes ownership of the mapping, so we don't defer cleanup here
@@ -75,9 +70,7 @@ test "loader dict loader init" {
 }
 
 test "loader dict loader load non-existent" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const mapping = std.StringHashMap([]const u8).init(allocator);
     // DictLoader takes ownership, no need to defer deinit here
@@ -90,9 +83,7 @@ test "loader dict loader load non-existent" {
 }
 
 test "loader function loader" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const loadFn = struct {
         fn load(name: []const u8, alloc: std.mem.Allocator) anyerror!?loaders.FunctionLoaderResult {
@@ -117,9 +108,7 @@ test "loader function loader" {
 }
 
 test "loader function loader not found" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const loadFn = struct {
         fn load(name: []const u8, alloc: std.mem.Allocator) anyerror!?loaders.FunctionLoaderResult {
@@ -137,9 +126,7 @@ test "loader function loader not found" {
 }
 
 test "loader function loader with uptodate from result" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Test uptodate function returned by load function (matches Python's tuple return)
     const TestUptodate = struct {
@@ -173,9 +160,7 @@ test "loader function loader with uptodate from result" {
 }
 
 test "loader function loader with legacy uptodate" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const loadFn = struct {
         fn load(name: []const u8, alloc: std.mem.Allocator) anyerror!?loaders.FunctionLoaderResult {
@@ -205,9 +190,7 @@ test "loader function loader with legacy uptodate" {
 }
 
 test "loader function loader with filename" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Test returning filename (matches Python's tuple return with filename)
     const loadFn = struct {
@@ -233,19 +216,19 @@ test "loader function loader with filename" {
 }
 
 test "loader package loader" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
+    var test_io_thr = std.Io.Threaded.init(allocator, .{});
+    const test_io = test_io_thr.io();
 
     // Create test directory structure
     const test_dir = "test/pkg_templates";
-    try std.fs.cwd().makePath(test_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    try cwd_dir.createDirPath(test_io, test_dir);
+    defer cwd_dir.deleteTree(test_io, test_dir) catch {};
 
     const test_file = "test/pkg_templates/hello.jinja";
-    const test_file_handle = try std.fs.cwd().createFile(test_file, .{});
-    try test_file_handle.writeAll("Hello from package!");
-    test_file_handle.close();
+    const test_file_handle = try cwd_dir.createFile(test_io, test_file, .{});
+    try test_file_handle.writeStreamingAll(test_io, "Hello from package!");
+    test_file_handle.close(test_io);
 
     // Package loader requires package_path, package_name, and resource_path
     var loader = try loaders.PackageLoader.init(allocator, "test", "test_package", "pkg_templates");
@@ -262,23 +245,23 @@ test "loader package loader" {
 }
 
 test "loader package loader list templates" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
+    var test_io_thr = std.Io.Threaded.init(allocator, .{});
+    const test_io = test_io_thr.io();
 
     // Create test directory structure
     const test_dir = "test/pkg_list_templates";
-    try std.fs.cwd().makePath(test_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    try cwd_dir.createDirPath(test_io, test_dir);
+    defer cwd_dir.deleteTree(test_io, test_dir) catch {};
 
     // Create multiple test files
     const files = [_][]const u8{ "index.jinja", "about.jinja" };
     for (files) |filename| {
         const full_path = try std.fs.path.join(allocator, &[_][]const u8{ test_dir, filename });
         defer allocator.free(full_path);
-        const file = try std.fs.cwd().createFile(full_path, .{});
-        try file.writeAll("Template content");
-        file.close();
+        const file = try cwd_dir.createFile(test_io, full_path, .{});
+        try file.writeStreamingAll(test_io, "Template content");
+        file.close(test_io);
     }
 
     var loader = try loaders.PackageLoader.init(allocator, "test", "mypackage", "pkg_list_templates");
@@ -296,25 +279,25 @@ test "loader package loader list templates" {
 }
 
 test "loader module loader" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
+    var test_io_thr = std.Io.Threaded.init(allocator, .{});
+    const test_io = test_io_thr.io();
 
     // Create test module directory
     const test_dir = "test/modules";
-    try std.fs.cwd().makePath(test_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    try cwd_dir.createDirPath(test_io, test_dir);
+    defer cwd_dir.deleteTree(test_io, test_dir) catch {};
 
     // Get the expected module filename using SHA1 hash (matches Python's behavior)
     const module_filename = loaders.ModuleLoader.getModuleFilename("index.html");
-    
+
     // Create the module file with the hashed name
     var full_path_buf: [256]u8 = undefined;
     const full_path = try std.fmt.bufPrint(&full_path_buf, "{s}/{s}", .{ test_dir, module_filename });
-    
-    const file = try std.fs.cwd().createFile(full_path, .{});
-    try file.writeAll("Precompiled template content");
-    file.close();
+
+    const file = try cwd_dir.createFile(test_io, full_path, .{});
+    try file.writeStreamingAll(test_io, "Precompiled template content");
+    file.close(test_io);
 
     // Initialize loader with search paths
     const paths = [_][]const u8{test_dir};
@@ -334,16 +317,16 @@ test "loader module loader get_template_key" {
     // Test that getTemplateKey produces consistent SHA1-based keys
     const key1 = loaders.ModuleLoader.getTemplateKey("index.html");
     const key2 = loaders.ModuleLoader.getTemplateKey("index.html");
-    
+
     // Same input should produce same key
     try testing.expectEqualStrings(&key1, &key2);
-    
+
     // Key should start with "tmpl_"
     try testing.expect(std.mem.startsWith(u8, &key1, "tmpl_"));
-    
+
     // Key should be 45 chars: "tmpl_" (5) + 40 hex chars (SHA1)
     try testing.expect(key1.len == 45);
-    
+
     // Different inputs should produce different keys
     const key3 = loaders.ModuleLoader.getTemplateKey("about.html");
     try testing.expect(!std.mem.eql(u8, &key1, &key3));
@@ -352,18 +335,16 @@ test "loader module loader get_template_key" {
 test "loader module loader get_module_filename" {
     // Test that getModuleFilename produces .zig files
     const filename = loaders.ModuleLoader.getModuleFilename("index.html");
-    
+
     // Filename should end with .zig
     try testing.expect(std.mem.endsWith(u8, &filename, ".zig"));
-    
+
     // Filename should be 49 chars: "tmpl_" (5) + 40 hex + ".zig" (4)
     try testing.expect(filename.len == 49);
 }
 
 test "loader module loader register template" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Test registering templates directly (alternative to file-based loading)
     const paths = [_][]const u8{};
@@ -372,7 +353,7 @@ test "loader module loader register template" {
 
     // Register a template
     try loader.registerTemplate("greeting.html", "Hello, World!");
-    
+
     // Load the registered template
     const content = try loader.getLoader().load("greeting.html");
     defer allocator.free(content);
@@ -386,9 +367,7 @@ test "loader module loader has_source_access" {
 }
 
 test "loader choice loader" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Create a dict loader with a template
     var mapping = std.StringHashMap([]const u8).init(allocator);
@@ -416,9 +395,7 @@ test "loader choice loader" {
 }
 
 test "loader choice loader fallback" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // First loader is empty
     const mapping1 = std.StringHashMap([]const u8).init(allocator);

@@ -227,10 +227,10 @@ test "extension bind to environment" {
 
 test "do extension init" {
     const allocator = testing.allocator;
-    
+
     var do_ext = try extensions.DoExtension.init(allocator);
     defer do_ext.deinit();
-    
+
     try testing.expectEqualStrings("jinja2.ext.do", do_ext.extension.name);
     try testing.expect(do_ext.extension.tags.items.len == 1);
     try testing.expectEqualStrings("do", do_ext.extension.tags.items[0]);
@@ -238,10 +238,10 @@ test "do extension init" {
 
 test "debug extension init" {
     const allocator = testing.allocator;
-    
+
     var debug_ext = try extensions.DebugExtension.init(allocator);
     defer debug_ext.deinit();
-    
+
     try testing.expectEqualStrings("jinja2.ext.debug", debug_ext.extension.name);
     try testing.expect(debug_ext.extension.tags.items.len == 1);
     try testing.expectEqualStrings("debug", debug_ext.extension.tags.items[0]);
@@ -249,10 +249,10 @@ test "debug extension init" {
 
 test "loop control extension init" {
     const allocator = testing.allocator;
-    
+
     var lc_ext = try extensions.LoopControlExtension.init(allocator);
     defer lc_ext.deinit();
-    
+
     try testing.expectEqualStrings("jinja2.ext.loopcontrols", lc_ext.extension.name);
     try testing.expect(lc_ext.extension.tags.items.len == 2);
     try testing.expectEqualStrings("break", lc_ext.extension.tags.items[0]);

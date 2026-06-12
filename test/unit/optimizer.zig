@@ -5,9 +5,7 @@ const optimizer = vibe_jinja.optimizer;
 const nodes = vibe_jinja.nodes;
 
 test "optimizer init" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var opt = optimizer.Optimizer.init(allocator);
     defer opt.deinit();
@@ -16,9 +14,7 @@ test "optimizer init" {
 }
 
 test "optimizer constant folding integer addition" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var opt = optimizer.Optimizer.init(allocator);
     defer opt.deinit();
@@ -42,9 +38,7 @@ test "optimizer constant folding integer addition" {
 }
 
 test "optimizer constant folding string concatenation" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var opt = optimizer.Optimizer.init(allocator);
     defer opt.deinit();
@@ -66,9 +60,7 @@ test "optimizer constant folding string concatenation" {
 }
 
 test "optimizer dead code elimination" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var opt = optimizer.Optimizer.init(allocator);
     defer opt.deinit();
@@ -96,9 +88,7 @@ test "optimizer dead code elimination" {
 }
 
 test "optimizer output merging" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var opt = optimizer.Optimizer.init(allocator);
     defer opt.deinit();
@@ -106,14 +96,14 @@ test "optimizer output merging" {
     // Create consecutive output statements
     var output1 = try nodes.Output.init(allocator, 1, "test.jinja");
     defer output1.deinit(allocator);
-    
+
     var str1 = try nodes.StringLiteral.init(allocator, "hello", 1, "test.jinja");
     defer str1.deinit(allocator);
     try output1.nodes.append(allocator, &str1.base);
 
     var output2 = try nodes.Output.init(allocator, 2, "test.jinja");
     defer output2.deinit(allocator);
-    
+
     var str2 = try nodes.StringLiteral.init(allocator, " world", 2, "test.jinja");
     defer str2.deinit(allocator);
     try output2.nodes.append(allocator, &str2.base);

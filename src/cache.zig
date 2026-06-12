@@ -383,137 +383,156 @@ pub const Bucket = struct {
         self.bytecode = null;
     }
 
-    /// Load bytecode from a reader
-    pub fn loadBytecode(self: *Self, reader: anytype) !void {
+    /// Load bytecode from bytes
+    pub fn loadBytecode(self: *Self, data: []const u8) !void {
+        var pos: usize = 0;
+
         // Read and verify magic header
-        var magic: [6]u8 = undefined;
-        const bytes_read = try reader.readAll(&magic);
-        if (bytes_read != 6 or !std.mem.eql(u8, &magic, &bc_magic)) {
+        if (data.len < 6) {
+            self.reset();
+            return;
+        }
+        const magic = data[0..6];
+        pos += 6;
+        if (!std.mem.eql(u8, magic, &bc_magic)) {
             self.reset();
             return;
         }
 
         // Read checksum
-        const stored_checksum = try reader.readInt(u64, .little);
+        const stored_checksum = std.mem.readInt(u64, data[pos..][0..8], .little);
+        pos += 8;
         if (stored_checksum != self.checksum) {
             self.reset();
             return;
         }
 
         // Deserialize bytecode
-        self.bytecode = try deserializeBytecode(self.allocator, reader);
+        self.bytecode = try deserializeBytecode(self.allocator, data, &pos);
     }
 
-    /// Write bytecode to a writer
-    pub fn writeBytecode(self: *Self, writer: anytype) !void {
+    /// Write bytecode to a buffer
+    pub fn writeBytecode(self: *Self, buf: *std.ArrayList(u8)) !void {
         if (self.bytecode == null) {
             return error.EmptyBucket;
         }
 
         // Write magic header
-        try writer.writeAll(&bc_magic);
+        try buf.appendSlice(self.allocator, &bc_magic);
 
         // Write checksum
-        try writer.writeInt(u64, self.checksum, .little);
+        try appendInt(u64, buf, self.allocator, self.checksum, .little);
 
         // Serialize bytecode
-        try serializeBytecode(self.bytecode.?, writer);
+        try serializeBytecode(self.bytecode.?, buf, self.allocator);
     }
 
-    /// Load bytecode from bytes
+    /// Load bytecode from bytes (convenience wrapper)
     pub fn bytecodeFromString(self: *Self, data: []const u8) !void {
-        var stream = std.io.fixedBufferStream(data);
-        try self.loadBytecode(stream.reader());
+        try self.loadBytecode(data);
     }
 
     /// Return bytecode as bytes
     pub fn bytecodeToString(self: *Self) ![]const u8 {
-        var buf = std.ArrayList(u8){};
+        var buf = std.ArrayList(u8).empty;
         errdefer buf.deinit(self.allocator);
-        try self.writeBytecode(buf.writer(self.allocator));
+        try self.writeBytecode(&buf);
         return try buf.toOwnedSlice(self.allocator);
     }
 };
 
-/// Serialize bytecode to a writer
-fn serializeBytecode(bc: bytecode_mod.Bytecode, writer: anytype) !void {
+/// Helper to write an integer to an ArrayList in little-endian format
+fn appendInt(comptime T: type, buf: *std.ArrayList(u8), allocator: std.mem.Allocator, value: T, endian: std.builtin.Endian) !void {
+    const bytes = std.mem.asBytes(&value);
+    if (endian != .little) {
+        var reversed: T = value;
+        // Swap bytes for big-endian
+        // For now, just use little-endian
+        _ = &reversed;
+    }
+    try buf.appendSlice(allocator, bytes);
+}
+
+/// Serialize bytecode to a buffer
+fn serializeBytecode(bc: bytecode_mod.Bytecode, buf: *std.ArrayList(u8), allocator: std.mem.Allocator) !void {
     // Write instruction count
-    try writer.writeInt(u32, @intCast(bc.instructions.items.len), .little);
+    try appendInt(u32, buf, allocator, @intCast(bc.instructions.items.len), .little);
 
     // Write instructions
     for (bc.instructions.items) |instr| {
-        try writer.writeInt(u8, @intFromEnum(instr.opcode), .little);
-        try writer.writeInt(u32, instr.operand, .little);
+        try appendInt(u8, buf, allocator, @intFromEnum(instr.opcode), .little);
+        try appendInt(u32, buf, allocator, instr.operand, .little);
     }
 
     // Write string pool
-    try writer.writeInt(u32, @intCast(bc.strings.items.len), .little);
+    try appendInt(u32, buf, allocator, @intCast(bc.strings.items.len), .little);
     for (bc.strings.items) |str| {
-        try writer.writeInt(u32, @intCast(str.len), .little);
-        try writer.writeAll(str);
+        try appendInt(u32, buf, allocator, @intCast(str.len), .little);
+        try buf.appendSlice(allocator, str);
     }
 
     // Write name pool
-    try writer.writeInt(u32, @intCast(bc.names.items.len), .little);
+    try appendInt(u32, buf, allocator, @intCast(bc.names.items.len), .little);
     for (bc.names.items) |name| {
-        try writer.writeInt(u32, @intCast(name.len), .little);
-        try writer.writeAll(name);
+        try appendInt(u32, buf, allocator, @intCast(name.len), .little);
+        try buf.appendSlice(allocator, name);
     }
 
     // Note: constants pool contains AST node pointers which cannot be serialized
     // The bytecode must be regenerated if constants are needed
-    try writer.writeInt(u32, 0, .little); // Placeholder for constants count
+    try appendInt(u32, buf, allocator, 0, .little); // Placeholder for constants count
 }
 
-/// Deserialize bytecode from a reader
-fn deserializeBytecode(allocator: std.mem.Allocator, reader: anytype) !bytecode_mod.Bytecode {
+/// Deserialize bytecode from bytes
+fn deserializeBytecode(allocator: std.mem.Allocator, data: []const u8, pos: *usize) !bytecode_mod.Bytecode {
     var bc = bytecode_mod.Bytecode.init(allocator);
     errdefer bc.deinit();
 
     // Read instruction count
-    const instr_count = try reader.readInt(u32, .little);
+    const instr_count = std.mem.readInt(u32, data[pos.*..][0..4], .little);
+    pos.* += 4;
 
     // Read instructions
     var i: u32 = 0;
     while (i < instr_count) : (i += 1) {
-        const opcode_byte = try reader.readInt(u8, .little);
-        const operand = try reader.readInt(u32, .little);
+        const opcode_byte = data[pos.*];
+        pos.* += 1;
+        const operand = std.mem.readInt(u32, data[pos.*..][0..4], .little);
+        pos.* += 4;
         const opcode = @as(bytecode_mod.Opcode, @enumFromInt(opcode_byte));
         try bc.addInstruction(opcode, operand);
     }
 
     // Read string pool
-    const str_count = try reader.readInt(u32, .little);
+    const str_count = std.mem.readInt(u32, data[pos.*..][0..4], .little);
+    pos.* += 4;
     var s: u32 = 0;
     while (s < str_count) : (s += 1) {
-        const str_len = try reader.readInt(u32, .little);
+        const str_len = std.mem.readInt(u32, data[pos.*..][0..4], .little);
+        pos.* += 4;
         const str = try allocator.alloc(u8, str_len);
         errdefer allocator.free(str);
-        const bytes_read = try reader.readAll(str);
-        if (bytes_read != str_len) {
-            allocator.free(str);
-            return error.UnexpectedEof;
-        }
+        @memcpy(str, data[pos.*..][0..str_len]);
+        pos.* += str_len;
         try bc.strings.append(allocator, str);
     }
 
     // Read name pool
-    const name_count = try reader.readInt(u32, .little);
+    const name_count = std.mem.readInt(u32, data[pos.*..][0..4], .little);
+    pos.* += 4;
     var n: u32 = 0;
     while (n < name_count) : (n += 1) {
-        const name_len = try reader.readInt(u32, .little);
+        const name_len = std.mem.readInt(u32, data[pos.*..][0..4], .little);
+        pos.* += 4;
         const name = try allocator.alloc(u8, name_len);
         errdefer allocator.free(name);
-        const bytes_read = try reader.readAll(name);
-        if (bytes_read != name_len) {
-            allocator.free(name);
-            return error.UnexpectedEof;
-        }
+        @memcpy(name, data[pos.*..][0..name_len]);
+        pos.* += name_len;
         try bc.names.append(allocator, name);
     }
 
     // Read constants placeholder (always 0 for now)
-    _ = try reader.readInt(u32, .little);
+    pos.* += 4;
 
     return bc;
 }
@@ -624,10 +643,15 @@ pub const FileSystemBytecodeCache = struct {
         const pat = try allocator.dupe(u8, pattern orelse DEFAULT_PATTERN);
 
         // Ensure directory exists
-        std.fs.cwd().makePath(dir) catch |err| switch (err) {
-            error.PathAlreadyExists => {},
-            else => return err,
-        };
+        // Ensure directory exists
+        {
+            var threaded_io = std.Io.Threaded.init(allocator, .{});
+            const io = threaded_io.io();
+            std.Io.Dir.cwd().createDirPath(io, dir) catch |err| switch (err) {
+                error.PathAlreadyExists => {},
+                else => return err,
+            };
+        }
 
         var self = Self{
             .allocator = allocator,
@@ -643,13 +667,6 @@ pub const FileSystemBytecodeCache = struct {
 
         return self;
     }
-
-    /// Get cache interface
-    pub fn getCache(self: *Self) *BytecodeCache {
-        self.cache.ptr = @ptrCast(self);
-        return &self.cache;
-    }
-
     /// Deinitialize
     pub fn deinit(self: *Self) void {
         self.allocator.free(self.directory);
@@ -657,23 +674,32 @@ pub const FileSystemBytecodeCache = struct {
     }
 
     /// Get default cache directory
+    /// Get cache interface
+    pub fn getCache(self: *Self) *BytecodeCache {
+        self.cache.ptr = @ptrCast(self);
+        return &self.cache;
+    }
+
     fn getDefaultCacheDir(allocator: std.mem.Allocator) ![]const u8 {
         // Use a user-specific subdirectory in /tmp
         const dirname = "_jinja2-cache";
 
         // Check if /tmp exists by trying to access it
-        std.fs.cwd().access("/tmp", .{}) catch {
-            // Fall back to current directory
-            return try allocator.dupe(u8, ".jinja2_cache");
-        };
+        // Use a simple approach - try to stat the path
+        {
+            var threaded_io = std.Io.Threaded.init(allocator, .{});
+            const io = threaded_io.io();
+            std.Io.Dir.accessAbsolute(io, "/tmp", .{}) catch {
+                return try allocator.dupe(u8, ".jinja2_cache");
+            };
+        }
 
         return try std.fmt.allocPrint(allocator, "/tmp/{s}", .{dirname});
     }
 
-    /// Get cache filename for a bucket
     fn getCacheFilename(self: *Self, bucket: *Bucket) ![]const u8 {
         // Replace %s in pattern with bucket key
-        var result = std.ArrayList(u8){};
+        var result = std.ArrayList(u8).empty;
         errdefer result.deinit(self.allocator);
 
         var i: usize = 0;
@@ -708,7 +734,10 @@ pub const FileSystemBytecodeCache = struct {
         defer self.allocator.free(filename);
 
         // Read entire file into memory
-        const file_data = std.fs.cwd().readFileAlloc(self.allocator, filename, 1024 * 1024) catch return;
+        const file_data = blk: {
+            var __io_thr = std.Io.Threaded.init(self.allocator, .{});
+            break :blk std.Io.Dir.cwd().readFileAlloc(__io_thr.io(), filename, self.allocator, std.Io.Limit.limited(1024 * 1024)) catch return;
+        };
         defer self.allocator.free(file_data);
 
         bucket.bytecodeFromString(file_data) catch {
@@ -730,18 +759,19 @@ pub const FileSystemBytecodeCache = struct {
         const tmp_filename = try std.fmt.allocPrint(self.allocator, "{s}.tmp", .{filename});
         defer self.allocator.free(tmp_filename);
 
-        const file = try std.fs.cwd().createFile(tmp_filename, .{});
+        var __io_thr_write = std.Io.Threaded.init(self.allocator, .{});
+        const file = try std.Io.Dir.cwd().createFile(__io_thr_write.io(), tmp_filename, .{});
         errdefer {
-            file.close();
-            std.fs.cwd().deleteFile(tmp_filename) catch {};
+            file.close(__io_thr_write.io());
+            std.Io.Dir.cwd().deleteFile(__io_thr_write.io(), tmp_filename) catch {};
         }
 
-        try file.writeAll(data);
-        file.close();
+        try file.writeStreamingAll(__io_thr_write.io(), data);
+        file.close(__io_thr_write.io());
 
         // Rename to final filename
-        std.fs.cwd().rename(tmp_filename, filename) catch |err| {
-            std.fs.cwd().deleteFile(tmp_filename) catch {};
+        std.Io.Dir.renameAbsolute(tmp_filename, filename, __io_thr_write.io()) catch |err| {
+            std.Io.Dir.cwd().deleteFile(__io_thr_write.io(), tmp_filename) catch {};
             return err;
         };
     }
@@ -749,8 +779,9 @@ pub const FileSystemBytecodeCache = struct {
     fn clearImpl(ptr: *anyopaque) void {
         const self: *Self = @ptrCast(@alignCast(ptr));
 
-        var dir = std.fs.cwd().openDir(self.directory, .{ .iterate = true }) catch return;
-        defer dir.close();
+        var __io_thr_clear = std.Io.Threaded.init(self.allocator, .{});
+        var dir = std.Io.Dir.cwd().openDir(__io_thr_clear.io(), self.directory, .{ .iterate = true }) catch return;
+        defer dir.close(__io_thr_clear.io());
 
         // Build pattern for matching (replace %s with wildcard logic)
         const prefix_end = std.mem.indexOf(u8, self.pattern, "%s") orelse return;
@@ -758,14 +789,14 @@ pub const FileSystemBytecodeCache = struct {
         const suffix = if (prefix_end + 2 < self.pattern.len) self.pattern[prefix_end + 2 ..] else "";
 
         var iter = dir.iterate();
-        while (iter.next() catch null) |entry| {
+        while (iter.next(__io_thr_clear.io()) catch null) |entry| {
             if (entry.kind != .file) continue;
 
             // Check if filename matches pattern
             if (std.mem.startsWith(u8, entry.name, prefix) and
                 std.mem.endsWith(u8, entry.name, suffix))
             {
-                dir.deleteFile(entry.name) catch {};
+                dir.deleteFile(__io_thr_clear.io(), entry.name) catch {};
             }
         }
     }

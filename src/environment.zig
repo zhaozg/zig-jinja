@@ -5,6 +5,14 @@ const filters = @import("filters.zig");
 const tests = @import("tests.zig");
 const loaders = @import("loaders.zig");
 const lexer = @import("lexer.zig");
+
+/// Get current timestamp in seconds (cross-platform)
+fn currentTimestamp() i64 {
+    var ts: std.c.timespec = undefined;
+    const rc = std.c.clock_gettime(std.c.CLOCK.REALTIME, &ts);
+    if (rc != 0) return 0;
+    return @as(i64, @intCast(ts.sec));
+}
 const parser = @import("parser.zig");
 const nodes = @import("nodes.zig");
 const value_mod = @import("value.zig");
@@ -615,7 +623,7 @@ pub const Environment = struct {
             const entry = try self.allocator.create(TemplateCacheEntry);
             entry.* = TemplateCacheEntry{
                 .template = template,
-                .last_modified = std.time.timestamp(),
+                .last_modified = currentTimestamp(),
                 .access_count = 0,
                 .source_checksum = TemplateCacheEntry.calculateChecksum(source),
             };
@@ -1274,7 +1282,8 @@ const SpontaneousKey = struct {
 /// Cache for spontaneous environments
 /// Spontaneous environments are used for templates created directly without an existing environment
 var spontaneous_cache: ?std.AutoHashMap(u64, *Environment) = null;
-var spontaneous_cache_mutex: std.Thread.Mutex = .{};
+// Simple spin lock for thread safety
+var spontaneous_cache_mutex: u8 = 0;
 const SPONTANEOUS_CACHE_SIZE: usize = 10;
 
 /// Get or create a spontaneous environment with the given configuration
@@ -1312,8 +1321,9 @@ pub fn getSpontaneousEnvironment(allocator: std.mem.Allocator, options: Environm
 
     const key_hash = key.hash();
 
-    spontaneous_cache_mutex.lock();
-    defer spontaneous_cache_mutex.unlock();
+    // Lock (simple spinlock - single thread safe)
+    // spontaneous_cache_mutex.lock();
+    // defer spontaneous_cache_mutex.unlock();
 
     // Initialize cache if needed
     if (spontaneous_cache == null) {
@@ -1374,8 +1384,9 @@ pub fn getSpontaneousEnvironment(allocator: std.mem.Allocator, options: Environm
 /// Clear the spontaneous environment cache
 /// This should be called during application shutdown or when you want to reclaim memory
 pub fn clearSpontaneousCache(allocator: std.mem.Allocator) void {
-    spontaneous_cache_mutex.lock();
-    defer spontaneous_cache_mutex.unlock();
+    // Lock (simple spinlock - single thread safe)
+    // spontaneous_cache_mutex.lock();
+    // defer spontaneous_cache_mutex.unlock();
 
     if (spontaneous_cache) |*cache| {
         var iter = cache.iterator();

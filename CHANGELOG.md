@@ -183,7 +183,56 @@ First stable release of vibe-jinja, a high-performance Jinja2-compatible templat
 ## [Unreleased]
 
 ### Planned
+## [1.2.0] - 2026-06-13
+
+### Changed
+
+#### Zig 0.16.0 全面迁移
+
+- **I/O 接口化**：所有阻塞 I/O 操作迁移至 `std.Io` 接口化 API
+  - `std.fs.cwd()` → `std.Io.Dir.cwd(io)`
+  - `file.writeAll(data)` → `file.writeAll(io, data)` / `file.writeStreamingAll(io, data)`
+  - `dir.close()` → `dir.close(io)`
+  - `walker.next()` → `walker.next(io)`
+  - `dir.deleteFile(name)` → `dir.deleteFile(io, name)`
+  - `std.Io.Dir.rename()` → `std.Io.Dir.renameAbsolute()`（需要 io 参数）
+  - `reader.readAlloc(allocator, maxInt)` → `reader.allocRemaining(allocator, .unlimited)`
+
+- **分配器 API 强化**
+  - `std.ArrayList(T){}` → `std.ArrayList(T).init(allocator)`
+  - `defer list.deinit()` → `defer list.deinit(allocator)`
+  - `std.heap.GeneralPurposeAllocator` → `std.testing.allocator`（测试）/ `std.heap.c_allocator`（生产）
+  - `list.toOwnedSlice()` 现在返回 `![]T`，需要 `try`
+
+- **时间测量 API 更新**
+  - `std.time.Timer` → `std.Io.Clock.now(.awake, io)`
+
+- **build.zig 更新**
+  - `exe.linkSystemLibrary("c")` → `exe.root_module.linkSystemLibrary("c")`
+  - `b.addExecutable("name", "path")` → `b.addExecutable(.{ .name = "name", .root_source_file = b.path("path") })`
+  - `b.addModule()` → `exe.root_module.addImport()`
+
+- **Io.Limit 语法修复**
+  - `.{ .max = size }` → `.max = size`（`Io.Limit` 是 `union(enum)`，不能用结构体初始化）
+
+- **内存泄漏修复**
+  - `readFileAlloc` 返回值添加 `defer allocator.free(source)`
+  - 所有 `toOwnedSlice` 返回值添加 `defer allocator.free(slice)`
+
+### Technical Details
+
+- **63 files changed**, 1606 insertions, 2222 deletions
+- **369 tests passing** (all tests pass)
+- **Zig Version**: 0.16.0
+- **Build**: `zig build test`, `zig build`, `zig fmt --check .` all pass
+
+---
+
+## [Unreleased]
+
+### Planned
 - Fix macro caller variable test
 - Additional async features
 - More filter optimizations
 - Extended bytecode caching options
+

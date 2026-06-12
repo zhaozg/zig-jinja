@@ -7,9 +7,7 @@ const context = vibe_jinja.context;
 const value = vibe_jinja.value;
 
 test "for loop with list" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -18,12 +16,12 @@ test "for loop with list" {
     defer rt.deinit();
 
     const source = "{% for item in items %}{{ item }}{% endfor %}";
-    
+
     // Create list value
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     const item1 = value.Value{ .string = try allocator.dupe(u8, "a") };
     const item2 = value.Value{ .string = try allocator.dupe(u8, "b") };
     const item3 = value.Value{ .string = try allocator.dupe(u8, "c") };
@@ -44,9 +42,7 @@ test "for loop with list" {
 }
 
 test "if statement true condition" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -55,7 +51,7 @@ test "if statement true condition" {
     defer rt.deinit();
 
     const source = "{% if condition %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const key = try allocator.dupe(u8, "condition");
@@ -69,9 +65,7 @@ test "if statement true condition" {
 }
 
 test "if statement false condition" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -80,7 +74,7 @@ test "if statement false condition" {
     defer rt.deinit();
 
     const source = "{% if condition %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const key = try allocator.dupe(u8, "condition");
@@ -94,9 +88,7 @@ test "if statement false condition" {
 }
 
 test "if elif else chain" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -105,7 +97,7 @@ test "if elif else chain" {
     defer rt.deinit();
 
     const source = "{% if x == 1 %}one{% elif x == 2 %}two{% else %}other{% endif %}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const x_key = try allocator.dupe(u8, "x");
@@ -119,9 +111,7 @@ test "if elif else chain" {
 }
 
 test "nested for loops" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -130,23 +120,23 @@ test "nested for loops" {
     defer rt.deinit();
 
     const source = "{% for row in rows %}{% for col in row %}{{ col }}{% endfor %}{% endfor %}";
-    
+
     // Create nested list structure
     const outer_list = try allocator.create(value.List);
     outer_list.* = value.List.init(allocator);
     defer outer_list.deinit(allocator);
-    
+
     // Inner lists are owned by outer_list after append - don't defer their deinit
     const inner_list1 = try allocator.create(value.List);
     inner_list1.* = value.List.init(allocator);
     try inner_list1.append(value.Value{ .string = try allocator.dupe(u8, "a") });
     try inner_list1.append(value.Value{ .string = try allocator.dupe(u8, "b") });
-    
+
     const inner_list2 = try allocator.create(value.List);
     inner_list2.* = value.List.init(allocator);
     try inner_list2.append(value.Value{ .string = try allocator.dupe(u8, "c") });
     try inner_list2.append(value.Value{ .string = try allocator.dupe(u8, "d") });
-    
+
     // After appending, outer_list owns inner_list1 and inner_list2
     try outer_list.append(value.Value{ .list = inner_list1 });
     try outer_list.append(value.Value{ .list = inner_list2 });
@@ -165,9 +155,7 @@ test "nested for loops" {
 }
 
 test "nested if statements" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -176,15 +164,15 @@ test "nested if statements" {
     defer rt.deinit();
 
     const source = "{% if x %}{% if y %}both{% else %}x only{% endif %}{% else %}neither{% endif %}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
-    
+
     const x_key = try allocator.dupe(u8, "x");
     defer allocator.free(x_key);
     const y_key = try allocator.dupe(u8, "y");
     defer allocator.free(y_key);
-    
+
     try vars.put(x_key, value.Value{ .boolean = true });
     try vars.put(y_key, value.Value{ .boolean = true });
 
@@ -195,9 +183,7 @@ test "nested if statements" {
 }
 
 test "for loop with continue" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -206,11 +192,11 @@ test "for loop with continue" {
     defer rt.deinit();
 
     const source = "{% for i in items %}{% if i == 2 %}{% continue %}{% endif %}{{ i }}{% endfor %}";
-    
+
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     try list.append(value.Value{ .integer = 1 });
     try list.append(value.Value{ .integer = 2 });
     try list.append(value.Value{ .integer = 3 });
@@ -231,9 +217,7 @@ test "for loop with continue" {
 }
 
 test "for loop with break" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -242,11 +226,11 @@ test "for loop with break" {
     defer rt.deinit();
 
     const source = "{% for i in items %}{% if i == 2 %}{% break %}{% endif %}{{ i }}{% endfor %}";
-    
+
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     try list.append(value.Value{ .integer = 1 });
     try list.append(value.Value{ .integer = 2 });
     try list.append(value.Value{ .integer = 3 });
@@ -266,9 +250,7 @@ test "for loop with break" {
 }
 
 test "for loop loop variables" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -277,11 +259,11 @@ test "for loop loop variables" {
     defer rt.deinit();
 
     const source = "{% for item in items %}{{ loop.index }}:{{ item }}{% endfor %}";
-    
+
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     try list.append(value.Value{ .string = try allocator.dupe(u8, "a") });
     try list.append(value.Value{ .string = try allocator.dupe(u8, "b") });
 
@@ -300,9 +282,7 @@ test "for loop loop variables" {
 }
 
 test "if with and operator" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -311,15 +291,15 @@ test "if with and operator" {
     defer rt.deinit();
 
     const source = "{% if x and y %}both{% else %}not both{% endif %}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
-    
+
     const x_key = try allocator.dupe(u8, "x");
     defer allocator.free(x_key);
     const y_key = try allocator.dupe(u8, "y");
     defer allocator.free(y_key);
-    
+
     try vars.put(x_key, value.Value{ .boolean = true });
     try vars.put(y_key, value.Value{ .boolean = true });
 
@@ -330,9 +310,7 @@ test "if with and operator" {
 }
 
 test "if with or operator" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -341,15 +319,15 @@ test "if with or operator" {
     defer rt.deinit();
 
     const source = "{% if x or y %}either{% else %}neither{% endif %}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
-    
+
     const x_key = try allocator.dupe(u8, "x");
     defer allocator.free(x_key);
     const y_key = try allocator.dupe(u8, "y");
     defer allocator.free(y_key);
-    
+
     try vars.put(x_key, value.Value{ .boolean = false });
     try vars.put(y_key, value.Value{ .boolean = true });
 
@@ -360,9 +338,7 @@ test "if with or operator" {
 }
 
 test "nested loop depth tracking" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -379,13 +355,13 @@ test "nested loop depth tracking" {
         \\{% endfor %}
         \\{% endfor %}
     ;
-    
+
     // Create outer list
     const outer_list = try allocator.create(value.List);
     outer_list.* = value.List.init(allocator);
     defer outer_list.deinit(allocator);
     try outer_list.append(value.Value{ .integer = 1 });
-    
+
     // Create inner list
     const inner_list = try allocator.create(value.List);
     inner_list.* = value.List.init(allocator);
@@ -394,12 +370,12 @@ test "nested loop depth tracking" {
 
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
-    
+
     const outer_key = try allocator.dupe(u8, "outer");
     defer allocator.free(outer_key);
     const inner_key = try allocator.dupe(u8, "inner");
     defer allocator.free(inner_key);
-    
+
     try vars.put(outer_key, value.Value{ .list = outer_list });
     try vars.put(inner_key, value.Value{ .list = inner_list });
 

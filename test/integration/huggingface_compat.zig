@@ -13,9 +13,7 @@ const value = vibe_jinja.value;
 // Tests 1-6 already verified passing
 
 test "HF 7: in operator for dict key check" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -52,9 +50,7 @@ test "HF 7: in operator for dict key check" {
 }
 
 test "HF 8: tojson filter" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -89,9 +85,7 @@ test "HF 8: tojson filter" {
 }
 
 test "HF 9: strftime_now direct call" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -113,9 +107,7 @@ test "HF 9: strftime_now direct call" {
 }
 
 test "HF 10: mapping test" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -148,9 +140,7 @@ test "HF 10: mapping test" {
 }
 
 test "HF 11: complex nested condition" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -189,9 +179,7 @@ test "HF 11: complex nested condition" {
 // ----------------------------------------------------------------------------
 
 test "Llama: bos_token rendering" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -221,9 +209,7 @@ test "Llama: bos_token rendering" {
 }
 
 test "Llama: basic chat format with system extraction" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();

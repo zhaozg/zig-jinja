@@ -6,9 +6,7 @@ const runtime = vibe_jinja.runtime;
 const value = vibe_jinja.value;
 
 test "binary addition integers" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -17,7 +15,7 @@ test "binary addition integers" {
     defer rt.deinit();
 
     const source = "{{ 5 + 3 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -28,9 +26,7 @@ test "binary addition integers" {
 }
 
 test "binary subtraction integers" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -39,7 +35,7 @@ test "binary subtraction integers" {
     defer rt.deinit();
 
     const source = "{{ 10 - 3 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -50,9 +46,7 @@ test "binary subtraction integers" {
 }
 
 test "binary multiplication integers" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -61,7 +55,7 @@ test "binary multiplication integers" {
     defer rt.deinit();
 
     const source = "{{ 4 * 5 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -72,9 +66,7 @@ test "binary multiplication integers" {
 }
 
 test "binary division floats" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -83,7 +75,7 @@ test "binary division floats" {
     defer rt.deinit();
 
     const source = "{{ 10 / 3 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -95,9 +87,7 @@ test "binary division floats" {
 }
 
 test "binary modulo integers" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -106,7 +96,7 @@ test "binary modulo integers" {
     defer rt.deinit();
 
     const source = "{{ 10 % 3 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -117,9 +107,7 @@ test "binary modulo integers" {
 }
 
 test "binary power integers" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -128,7 +116,7 @@ test "binary power integers" {
     defer rt.deinit();
 
     const source = "{{ 2 ** 3 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -139,9 +127,7 @@ test "binary power integers" {
 }
 
 test "string concatenation" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -150,7 +136,7 @@ test "string concatenation" {
     defer rt.deinit();
 
     const source = "{{ 'hello' + ' ' + 'world' }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -161,9 +147,7 @@ test "string concatenation" {
 }
 
 test "string and number concatenation" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -172,7 +156,7 @@ test "string and number concatenation" {
     defer rt.deinit();
 
     const source = "{{ 'Number: ' + 42 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -183,9 +167,7 @@ test "string and number concatenation" {
 }
 
 test "number and string concatenation" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -194,7 +176,7 @@ test "number and string concatenation" {
     defer rt.deinit();
 
     const source = "{{ 42 + ' is the answer' }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -205,9 +187,7 @@ test "number and string concatenation" {
 }
 
 test "comparison operators" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -216,7 +196,7 @@ test "comparison operators" {
     defer rt.deinit();
 
     const source = "{{ (5 == 5) and (3 < 5) and (10 > 2) and (4 <= 4) and (6 >= 6) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -227,9 +207,7 @@ test "comparison operators" {
 }
 
 test "logical operators" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -238,7 +216,7 @@ test "logical operators" {
     defer rt.deinit();
 
     const source = "{{ true and true and (false or true) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -249,9 +227,7 @@ test "logical operators" {
 }
 
 test "operator precedence" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -260,7 +236,7 @@ test "operator precedence" {
     defer rt.deinit();
 
     const source = "{{ 2 + 3 * 4 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -272,9 +248,7 @@ test "operator precedence" {
 }
 
 test "mixed int float operations" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -283,7 +257,7 @@ test "mixed int float operations" {
     defer rt.deinit();
 
     const source = "{{ 5 + 3.5 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 

@@ -6,9 +6,7 @@ const runtime = vibe_jinja.runtime;
 const value = vibe_jinja.value;
 
 test "variable resolution from context" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -17,7 +15,7 @@ test "variable resolution from context" {
     defer rt.deinit();
 
     const source = "{{ name }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer {
         // Free keys and values since Context.init makes its own copy
@@ -39,9 +37,7 @@ test "variable resolution from context" {
 }
 
 test "undefined variable lenient behavior" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -51,7 +47,7 @@ test "undefined variable lenient behavior" {
     defer rt.deinit();
 
     const source = "{{ undefined_var }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -62,9 +58,7 @@ test "undefined variable lenient behavior" {
 }
 
 test "undefined variable debug behavior" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -74,7 +68,7 @@ test "undefined variable debug behavior" {
     defer rt.deinit();
 
     const source = "{{ undefined_var }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -85,13 +79,11 @@ test "undefined variable debug behavior" {
 }
 
 test "variable resolution from environment globals" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
-    
+
     const global_key = try allocator.dupe(u8, "global_var");
     defer allocator.free(global_key);
     const global_val = try allocator.dupe(u8, "global_value");
@@ -101,7 +93,7 @@ test "variable resolution from environment globals" {
     defer rt.deinit();
 
     const source = "{{ global_var }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 

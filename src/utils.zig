@@ -39,6 +39,13 @@ const value_mod = @import("value.zig");
 const context = @import("context.zig");
 const environment = @import("environment.zig");
 
+/// Get current timestamp in seconds (cross-platform)
+fn currentTimestamp() i64 {
+    var ts: std.c.timespec = undefined;
+    const rc = std.c.clock_gettime(std.c.CLOCK.REALTIME, &ts);
+    if (rc != 0) return 0;
+    return @as(i64, @intCast(ts.sec));
+}
 /// Re-export Value type for convenience
 pub const Value = value_mod.Value;
 
@@ -447,7 +454,7 @@ pub const Joiner = struct {
             return try self.allocator.dupe(u8, "");
         }
 
-        var result = std.ArrayList(u8){};
+        var result = std.ArrayList(u8).empty;
         defer result.deinit(self.allocator);
 
         for (values, 0..) |val, i| {
@@ -735,7 +742,7 @@ pub fn lipsumGlobal(
     }
 
     // Generate lorem ipsum text
-    var result = std.ArrayList(u8){};
+    var result = std.ArrayList(u8).empty;
     defer result.deinit(allocator);
 
     const avg_words = (min_words + max_words) / 2;
@@ -773,7 +780,7 @@ pub fn generateLoremIpsum(allocator: std.mem.Allocator, words: usize) ![]const u
         "aliquip",    "ex",           "ea",      "commodo", "consequat",
     };
 
-    var result = std.ArrayList(u8){};
+    var result = std.ArrayList(u8).empty;
     defer result.deinit(allocator);
 
     for (0..words) |i| {
@@ -990,22 +997,21 @@ pub fn strftimeNowGlobal(
     if (args.len < 1) {
         return error.InvalidArgument;
     }
-
     // Get format string from first argument
     const format = switch (args[0]) {
         .string => |s| s,
-        else => return error.TypeError,
+        else => return error.InvalidArgument,
     };
 
     // Get current timestamp
-    const timestamp = std.time.timestamp();
+    const timestamp = currentTimestamp();
     const epoch_seconds = std.time.epoch.EpochSeconds{ .secs = @intCast(timestamp) };
     const day_seconds = epoch_seconds.getDaySeconds();
     const epoch_day = epoch_seconds.getEpochDay();
     const year_day = epoch_day.calculateYearDay();
 
     // Format according to strftime spec
-    var buffer = std.ArrayList(u8){};
+    var buffer = std.ArrayList(u8).empty;
     errdefer buffer.deinit(allocator);
 
     var i: usize = 0;
@@ -1142,8 +1148,8 @@ const month_abbrevs = [_][]const u8{
 };
 
 const month_full_names = [_][]const u8{
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "January", "February", "March",     "April",   "May",      "June",
+    "July",    "August",   "September", "October", "November", "December",
 };
 
 // Sunday-indexed weekday arrays (0=Sunday, 6=Saturday) for strftime compatibility

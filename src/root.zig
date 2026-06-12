@@ -188,10 +188,12 @@ pub fn eval(allocator: std.mem.Allocator, content: []const u8) ![]const u8 {
 }
 
 fn _eval_file(allocator: std.mem.Allocator, path: []const u8, debug: bool) ![]const u8 {
-    const file = try std.fs.cwd().openFile(path, .{});
+    const cwd = std.Io.Dir.cwd();
+    var io = std.Io.Threaded.init();
+    const file = try cwd.openFile(&io, path, .{});
     defer file.close();
 
-    const content = try file.readToEndAlloc(allocator, std.math.maxInt(usize));
+    const content = try file.readToEndAlloc(&io, allocator, std.math.maxInt(usize));
 
     return try _eval(allocator, content, debug);
 }
@@ -245,7 +247,7 @@ fn evalTemplate(template: *nodes_mod.Template, allocator: std.mem.Allocator) ![]
         var ctx = try context.Context.init(&default_env, empty_vars, null, allocator);
         defer ctx.deinit();
 
-        var out = std.ArrayList(u8){};
+        var out = std.ArrayList(u8).empty;
         defer out.deinit(allocator);
 
         for (template.body.items) |stmt| {
@@ -263,7 +265,7 @@ fn evalTemplate(template: *nodes_mod.Template, allocator: std.mem.Allocator) ![]
     var ctx = try context.Context.init(env, empty_vars, null, allocator);
     defer ctx.deinit();
 
-    var out = std.ArrayList(u8){};
+    var out = std.ArrayList(u8).empty;
     defer out.deinit(allocator);
 
     for (template.body.items) |stmt| {
@@ -300,19 +302,16 @@ fn test_eval(allocator: std.mem.Allocator, path: []const u8, debug: bool) !void 
     const source_path = try std.mem.concat(allocator, u8, &[_][]const u8{ path, "/test.jinja" });
     defer allocator.free(source_path);
 
-    const source_file = try std.fs.cwd().openFile(source_path, .{});
-    defer source_file.close();
+    const cwd = std.Io.Dir.cwd();
+    var io = std.Io.Threaded.init(allocator, .{});
 
-    const source = try source_file.readToEndAlloc(allocator, std.math.maxInt(usize));
+    const source = try cwd.readFileAlloc(io.io(), source_path, allocator, .unlimited);
     defer allocator.free(source);
 
     const expected_path = try std.mem.concat(allocator, u8, &[_][]const u8{ path, "/test.html" });
     defer allocator.free(expected_path);
 
-    const expected_file = try std.fs.cwd().openFile(expected_path, .{});
-    defer expected_file.close();
-
-    const expected = try expected_file.readToEndAlloc(allocator, std.math.maxInt(usize));
+    const expected = try cwd.readFileAlloc(io.io(), expected_path, allocator, .unlimited);
     defer allocator.free(expected);
 
     const actual = try _eval(allocator, source, debug);

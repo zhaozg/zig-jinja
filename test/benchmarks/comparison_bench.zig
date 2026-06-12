@@ -7,9 +7,7 @@ const value_mod = vibe_jinja.value;
 /// Fair comparison benchmark - matches Python Jinja2 benchmark methodology exactly
 /// Python pre-compiles template, then times only render() calls with pre-built context dict
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     std.debug.print("\n", .{});
     std.debug.print("╔═══════════════════════════════════════════════════════════════════╗\n", .{});
@@ -245,31 +243,31 @@ pub fn main() !void {
 // === Additional Filter Benchmarks ===
 fn benchmarkFilterFastPaths(allocator: std.mem.Allocator) !void {
     std.debug.print("\n─── Filter Fast Path Tests ───\n\n", .{});
-    
+
     var env = environment.Environment.init(allocator);
     defer env.deinit();
-    
+
     // Test 1: escape with no special chars (fast path)
     {
         const template = try env.fromString("{{ text|escape }}", "escape_fast");
         var compiled = try vibe_jinja.compiler.compile(&env, template, "escape_fast", allocator);
         defer compiled.deinit();
-        
+
         var vars = std.StringHashMap(context.Value).init(allocator);
         defer vars.deinit();
         const text_str = try allocator.dupe(u8, "Hello World No Special Chars");
         defer allocator.free(text_str);
         try vars.put("text", context.Value{ .string = text_str });
-        
+
         var ctx = try context.Context.init(&env, vars, "test", allocator);
         defer ctx.deinit();
-        
+
         // Warmup
         for (0..10) |_| {
             const result = try compiled.render(&ctx, allocator);
             allocator.free(result);
         }
-        
+
         const iterations: usize = 1000;
         var total_ns: u64 = 0;
         for (0..iterations) |_| {
@@ -278,30 +276,30 @@ fn benchmarkFilterFastPaths(allocator: std.mem.Allocator) !void {
             total_ns += @intCast(std.time.nanoTimestamp() - start);
             allocator.free(result);
         }
-        
+
         std.debug.print("escape (no specials - fast path): {d}ns avg\n", .{total_ns / iterations});
     }
-    
+
     // Test 2: escape with special chars (slow path)
     {
         const template = try env.fromString("{{ text|escape }}", "escape_slow");
         var compiled = try vibe_jinja.compiler.compile(&env, template, "escape_slow", allocator);
         defer compiled.deinit();
-        
+
         var vars = std.StringHashMap(context.Value).init(allocator);
         defer vars.deinit();
         const text_str = try allocator.dupe(u8, "<script>alert('xss');</script>");
         defer allocator.free(text_str);
         try vars.put("text", context.Value{ .string = text_str });
-        
+
         var ctx = try context.Context.init(&env, vars, "test", allocator);
         defer ctx.deinit();
-        
+
         for (0..10) |_| {
             const result = try compiled.render(&ctx, allocator);
             allocator.free(result);
         }
-        
+
         const iterations: usize = 1000;
         var total_ns: u64 = 0;
         for (0..iterations) |_| {
@@ -310,30 +308,30 @@ fn benchmarkFilterFastPaths(allocator: std.mem.Allocator) !void {
             total_ns += @intCast(std.time.nanoTimestamp() - start);
             allocator.free(result);
         }
-        
+
         std.debug.print("escape (with specials - slow path): {d}ns avg\n", .{total_ns / iterations});
     }
-    
+
     // Test 3: upper on already uppercase (fast path)
     {
         const template = try env.fromString("{{ text|upper }}", "upper_fast");
         var compiled = try vibe_jinja.compiler.compile(&env, template, "upper_fast", allocator);
         defer compiled.deinit();
-        
+
         var vars = std.StringHashMap(context.Value).init(allocator);
         defer vars.deinit();
         const text_str = try allocator.dupe(u8, "ALREADY UPPERCASE");
         defer allocator.free(text_str);
         try vars.put("text", context.Value{ .string = text_str });
-        
+
         var ctx = try context.Context.init(&env, vars, "test", allocator);
         defer ctx.deinit();
-        
+
         for (0..10) |_| {
             const result = try compiled.render(&ctx, allocator);
             allocator.free(result);
         }
-        
+
         const iterations: usize = 1000;
         var total_ns: u64 = 0;
         for (0..iterations) |_| {
@@ -342,30 +340,30 @@ fn benchmarkFilterFastPaths(allocator: std.mem.Allocator) !void {
             total_ns += @intCast(std.time.nanoTimestamp() - start);
             allocator.free(result);
         }
-        
+
         std.debug.print("upper (already upper - fast path): {d}ns avg\n", .{total_ns / iterations});
     }
-    
+
     // Test 4: upper on lowercase (slow path)
     {
         const template = try env.fromString("{{ text|upper }}", "upper_slow");
         var compiled = try vibe_jinja.compiler.compile(&env, template, "upper_slow", allocator);
         defer compiled.deinit();
-        
+
         var vars = std.StringHashMap(context.Value).init(allocator);
         defer vars.deinit();
         const text_str = try allocator.dupe(u8, "needs to be uppercased");
         defer allocator.free(text_str);
         try vars.put("text", context.Value{ .string = text_str });
-        
+
         var ctx = try context.Context.init(&env, vars, "test", allocator);
         defer ctx.deinit();
-        
+
         for (0..10) |_| {
             const result = try compiled.render(&ctx, allocator);
             allocator.free(result);
         }
-        
+
         const iterations: usize = 1000;
         var total_ns: u64 = 0;
         for (0..iterations) |_| {
@@ -374,7 +372,7 @@ fn benchmarkFilterFastPaths(allocator: std.mem.Allocator) !void {
             total_ns += @intCast(std.time.nanoTimestamp() - start);
             allocator.free(result);
         }
-        
+
         std.debug.print("upper (needs change - slow path): {d}ns avg\n", .{total_ns / iterations});
     }
 }

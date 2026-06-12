@@ -297,7 +297,7 @@ pub const Lexer = struct {
 
     /// Tokenize the entire source into a token stream
     pub fn tokenize(self: *Self, allocator: std.mem.Allocator) !TokenStream {
-        var tokens = std.ArrayList(Token){};
+        var tokens = std.ArrayList(Token).empty;
         defer tokens.deinit(allocator);
 
         while (self.cursor < self.source.len) {

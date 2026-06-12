@@ -7,9 +7,7 @@ const context = vibe_jinja.context;
 const environment = vibe_jinja.environment;
 
 test "test defined" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // In Jinja2, "is defined" checks if the value EXISTS, not if it's truthy
     // Any value that is not the undefined type is considered "defined"
@@ -38,30 +36,28 @@ test "test defined" {
 }
 
 test "test undefined" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // In Jinja2, "is undefined" checks if the value is the undefined type
     // Only variables that don't exist in the context are undefined
 
     // Test with actual undefined value - IS undefined
     const undefined_val = value.Value{ .undefined = value.Undefined{ .name = "x", .behavior = .lenient, .logger = null } };
-    try testing.expect(tests.BuiltinTests.@"undefined"(undefined_val, &[_]value.Value{}, null, null));
+    try testing.expect(tests.BuiltinTests.undefined(undefined_val, &[_]value.Value{}, null, null));
 
     // Test with empty string - NOT undefined (it's a valid value)
     var empty_val = value.Value{ .string = try allocator.dupe(u8, "") };
     defer empty_val.deinit(allocator);
-    try testing.expect(!tests.BuiltinTests.@"undefined"(empty_val, &[_]value.Value{}, null, null));
+    try testing.expect(!tests.BuiltinTests.undefined(empty_val, &[_]value.Value{}, null, null));
 
     // Test with string value - NOT undefined
     var val = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer val.deinit(allocator);
-    try testing.expect(!tests.BuiltinTests.@"undefined"(val, &[_]value.Value{}, null, null));
+    try testing.expect(!tests.BuiltinTests.undefined(val, &[_]value.Value{}, null, null));
 
     // Test with null - NOT undefined
     const null_val = value.Value{ .null = {} };
-    try testing.expect(!tests.BuiltinTests.@"undefined"(null_val, &[_]value.Value{}, null, null));
+    try testing.expect(!tests.BuiltinTests.undefined(null_val, &[_]value.Value{}, null, null));
 }
 
 test "test equalto" {
@@ -83,7 +79,7 @@ test "test even" {
     try testing.expect(tests.BuiltinTests.even(value.Value{ .integer = 0 }, &[_]value.Value{}, null, null));
     try testing.expect(!tests.BuiltinTests.even(value.Value{ .integer = 1 }, &[_]value.Value{}, null, null));
     try testing.expect(!tests.BuiltinTests.even(value.Value{ .integer = 3 }, &[_]value.Value{}, null, null));
-    
+
     // String "2" can be converted to integer 2, which is even (Jinja2 type coercion)
     try testing.expect(tests.BuiltinTests.even(value.Value{ .string = "2" }, &[_]value.Value{}, null, null));
     // Non-numeric string should return false
@@ -95,7 +91,7 @@ test "test odd" {
     try testing.expect(tests.BuiltinTests.odd(value.Value{ .integer = 3 }, &[_]value.Value{}, null, null));
     try testing.expect(!tests.BuiltinTests.odd(value.Value{ .integer = 2 }, &[_]value.Value{}, null, null));
     try testing.expect(!tests.BuiltinTests.odd(value.Value{ .integer = 0 }, &[_]value.Value{}, null, null));
-    
+
     // String "1" can be converted to integer 1, which is odd (Jinja2 type coercion)
     try testing.expect(tests.BuiltinTests.odd(value.Value{ .string = "1" }, &[_]value.Value{}, null, null));
     // Non-numeric string should return false
@@ -106,18 +102,16 @@ test "test divisibleby" {
     try testing.expect(tests.BuiltinTests.divisibleby(value.Value{ .integer = 10 }, &[_]value.Value{value.Value{ .integer = 5 }}, null, null));
     try testing.expect(tests.BuiltinTests.divisibleby(value.Value{ .integer = 10 }, &[_]value.Value{value.Value{ .integer = 2 }}, null, null));
     try testing.expect(!tests.BuiltinTests.divisibleby(value.Value{ .integer = 10 }, &[_]value.Value{value.Value{ .integer = 3 }}, null, null));
-    
+
     // Division by zero should return false
     try testing.expect(!tests.BuiltinTests.divisibleby(value.Value{ .integer = 10 }, &[_]value.Value{value.Value{ .integer = 0 }}, null, null));
-    
+
     // No args should return false
     try testing.expect(!tests.BuiltinTests.divisibleby(value.Value{ .integer = 10 }, &[_]value.Value{}, null, null));
 }
 
 test "test lower" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var lower_str = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer lower_str.deinit(allocator);
@@ -133,9 +127,7 @@ test "test lower" {
 }
 
 test "test upper" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var upper_str = value.Value{ .string = try allocator.dupe(u8, "HELLO") };
     defer upper_str.deinit(allocator);
@@ -151,9 +143,7 @@ test "test upper" {
 }
 
 test "test string" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var str_val = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer str_val.deinit(allocator);
@@ -166,20 +156,16 @@ test "test string" {
 test "test number" {
     try testing.expect(tests.BuiltinTests.number(value.Value{ .integer = 42 }, &[_]value.Value{}, null, null));
     try testing.expect(tests.BuiltinTests.number(value.Value{ .float = 3.14 }, &[_]value.Value{}, null, null));
-    
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
-    
+
+    const allocator = std.testing.allocator;
+
     var str_val = value.Value{ .string = try allocator.dupe(u8, "42") };
     defer str_val.deinit(allocator);
     try testing.expect(!tests.BuiltinTests.number(str_val, &[_]value.Value{}, null, null));
 }
 
 test "test empty" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var empty_str = value.Value{ .string = try allocator.dupe(u8, "") };
     defer empty_str.deinit(allocator);
@@ -194,11 +180,9 @@ test "test empty" {
 
 test "test none" {
     try testing.expect(tests.BuiltinTests.none(value.Value{ .null = {} }, &[_]value.Value{}, null, null));
-    
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
-    
+
+    const allocator = std.testing.allocator;
+
     var str_val = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer str_val.deinit(allocator);
     try testing.expect(!tests.BuiltinTests.none(str_val, &[_]value.Value{}, null, null));
@@ -208,21 +192,21 @@ test "test none" {
 test "test boolean" {
     try testing.expect(tests.BuiltinTests.boolean(value.Value{ .boolean = true }, &[_]value.Value{}, null, null));
     try testing.expect(tests.BuiltinTests.boolean(value.Value{ .boolean = false }, &[_]value.Value{}, null, null));
-    
+
     try testing.expect(!tests.BuiltinTests.boolean(value.Value{ .integer = 1 }, &[_]value.Value{}, null, null));
     try testing.expect(!tests.BuiltinTests.boolean(value.Value{ .integer = 0 }, &[_]value.Value{}, null, null));
 }
 
 test "test false" {
-    try testing.expect(tests.BuiltinTests.@"false"(value.Value{ .boolean = false }, &[_]value.Value{}, null, null));
-    try testing.expect(!tests.BuiltinTests.@"false"(value.Value{ .boolean = true }, &[_]value.Value{}, null, null));
-    try testing.expect(!tests.BuiltinTests.@"false"(value.Value{ .integer = 0 }, &[_]value.Value{}, null, null));
+    try testing.expect(tests.BuiltinTests.false(value.Value{ .boolean = false }, &[_]value.Value{}, null, null));
+    try testing.expect(!tests.BuiltinTests.false(value.Value{ .boolean = true }, &[_]value.Value{}, null, null));
+    try testing.expect(!tests.BuiltinTests.false(value.Value{ .integer = 0 }, &[_]value.Value{}, null, null));
 }
 
 test "test true" {
-    try testing.expect(tests.BuiltinTests.@"true"(value.Value{ .boolean = true }, &[_]value.Value{}, null, null));
-    try testing.expect(!tests.BuiltinTests.@"true"(value.Value{ .boolean = false }, &[_]value.Value{}, null, null));
-    try testing.expect(!tests.BuiltinTests.@"true"(value.Value{ .integer = 1 }, &[_]value.Value{}, null, null));
+    try testing.expect(tests.BuiltinTests.true(value.Value{ .boolean = true }, &[_]value.Value{}, null, null));
+    try testing.expect(!tests.BuiltinTests.true(value.Value{ .boolean = false }, &[_]value.Value{}, null, null));
+    try testing.expect(!tests.BuiltinTests.true(value.Value{ .integer = 1 }, &[_]value.Value{}, null, null));
 }
 
 test "test integer" {
@@ -238,9 +222,7 @@ test "test float" {
 }
 
 test "test mapping" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const dict = try allocator.create(value.Dict);
     dict.* = value.Dict.init(allocator);
@@ -254,9 +236,7 @@ test "test mapping" {
 }
 
 test "test sequence" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -270,9 +250,7 @@ test "test sequence" {
 }
 
 test "test iterable" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -295,9 +273,7 @@ test "test iterable" {
 
 test "test callable" {
     // Callable test checks for macros, functions, and callable objects
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Test with string (not callable without context/env)
     var str_val = value.Value{ .string = try allocator.dupe(u8, "func") };
@@ -321,7 +297,7 @@ test "test callable" {
             return value.Value{ .integer = 42 };
         }
     }.call;
-    
+
     var callable_with_fn = try allocator.create(value.Callable);
     const fn_name = try allocator.dupe(u8, "test_fn");
     callable_with_fn.* = value.Callable.initWithFunc(fn_name, test_fn, false);
@@ -331,7 +307,7 @@ test "test callable" {
     }
     const callable_fn_val = value.Value{ .callable = callable_with_fn };
     try testing.expect(tests.BuiltinTests.callable(callable_fn_val, &[_]value.Value{}, null, null));
-    
+
     // Test Value.isCallable() helper
     try testing.expect(callable_val.isCallable());
     try testing.expect(callable_fn_val.isCallable());
@@ -343,16 +319,16 @@ test "test callable" {
     var dict = try allocator.create(value.Dict);
     dict.* = value.Dict.init(allocator);
     defer dict.deinit(allocator);
-    
+
     // dict.set duplicates the key, so we can pass a string literal directly
     try dict.set("__call__", value.Value{ .boolean = true });
     const dict_val = value.Value{ .dict = dict };
     try testing.expect(tests.BuiltinTests.callable(dict_val, &[_]value.Value{}, null, null));
-    
+
     // Test with environment and filter name
     var env = environment.Environment.init(allocator);
     defer env.deinit();
-    
+
     var filter_name = value.Value{ .string = try allocator.dupe(u8, "upper") };
     defer filter_name.deinit(allocator);
     // Filter names are callable when an environment is provided
@@ -375,9 +351,7 @@ test "test sameas" {
 }
 
 test "test escaped" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Create markup value
     var markup = try value.Markup.init(allocator, "<html>");
@@ -391,9 +365,7 @@ test "test escaped" {
 }
 
 test "test in" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Test with list
     const list = try allocator.create(value.List);
@@ -403,28 +375,26 @@ test "test in" {
     try list.append(value.Value{ .integer = 2 });
     try list.append(value.Value{ .integer = 3 });
     const list_val = value.Value{ .list = list };
-    
+
     var args = [_]value.Value{list_val};
-    try testing.expect(tests.BuiltinTests.@"in"(value.Value{ .integer = 2 }, &args, null, null));
-    try testing.expect(!tests.BuiltinTests.@"in"(value.Value{ .integer = 4 }, &args, null, null));
+    try testing.expect(tests.BuiltinTests.in(value.Value{ .integer = 2 }, &args, null, null));
+    try testing.expect(!tests.BuiltinTests.in(value.Value{ .integer = 4 }, &args, null, null));
 
     // Test with string
     var str_val = value.Value{ .string = try allocator.dupe(u8, "hello world") };
     defer str_val.deinit(allocator);
     var args2 = [_]value.Value{str_val};
-    
+
     var substr = value.Value{ .string = try allocator.dupe(u8, "world") };
     defer substr.deinit(allocator);
-    try testing.expect(tests.BuiltinTests.@"in"(substr, &args2, null, null));
+    try testing.expect(tests.BuiltinTests.in(substr, &args2, null, null));
 
     // No args should return false
-    try testing.expect(!tests.BuiltinTests.@"in"(value.Value{ .integer = 1 }, &[_]value.Value{}, null, null));
+    try testing.expect(!tests.BuiltinTests.in(value.Value{ .integer = 1 }, &[_]value.Value{}, null, null));
 }
 
 test "test filter" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -444,9 +414,7 @@ test "test filter" {
 }
 
 test "test test" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -482,13 +450,11 @@ test "test equalto with integers" {
 }
 
 test "test equalto with strings" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var val1 = value.Value{ .string = try allocator.dupe(u8, "baz") };
     defer val1.deinit(allocator);
-    
+
     var val2 = value.Value{ .string = try allocator.dupe(u8, "baz") };
     defer val2.deinit(allocator);
     var args = [_]value.Value{val2};
@@ -505,41 +471,35 @@ test "test equalto with strings" {
 // ============================================================================
 
 test "test empty list" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     const list_val = value.Value{ .list = list };
     try testing.expect(tests.BuiltinTests.empty(list_val, &[_]value.Value{}, null, null));
 }
 
 test "test empty dict" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const dict = try allocator.create(value.Dict);
     dict.* = value.Dict.init(allocator);
     defer dict.deinit(allocator);
-    
+
     const dict_val = value.Value{ .dict = dict };
     try testing.expect(tests.BuiltinTests.empty(dict_val, &[_]value.Value{}, null, null));
 }
 
 test "test non-empty list" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
     try list.append(value.Value{ .integer = 1 });
-    
+
     const list_val = value.Value{ .list = list };
     try testing.expect(!tests.BuiltinTests.empty(list_val, &[_]value.Value{}, null, null));
 }
@@ -551,7 +511,7 @@ test "test non-empty list" {
 test "test divisibleby with float" {
     // 10.0 / 5 = 2.0 (exact)
     try testing.expect(tests.BuiltinTests.divisibleby(value.Value{ .float = 10.0 }, &[_]value.Value{value.Value{ .integer = 5 }}, null, null));
-    
+
     // 10.0 / 3 = 3.333... (not exact)
     try testing.expect(!tests.BuiltinTests.divisibleby(value.Value{ .float = 10.0 }, &[_]value.Value{value.Value{ .integer = 3 }}, null, null));
 }
@@ -725,9 +685,7 @@ test "comparison test: ne with integers" {
 }
 
 test "comparison test: ne with strings" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var val1 = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer val1.deinit(allocator);
@@ -775,9 +733,7 @@ test "comparison test: mixed int/float" {
 }
 
 test "comparison test aliases exist in environment" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();

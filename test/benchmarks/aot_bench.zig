@@ -79,9 +79,7 @@ fn runJitBenchmark(allocator: std.mem.Allocator, template: []const u8, iteration
 }
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     std.debug.print("\n", .{});
     std.debug.print("╔════════════════════════════════════════════════════════════════════════╗\n", .{});

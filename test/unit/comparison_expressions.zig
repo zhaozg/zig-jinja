@@ -16,9 +16,7 @@ fn cleanupVars(vars: *std.StringHashMap(value.Value), allocator: std.mem.Allocat
 }
 
 test "in operator with list" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -27,7 +25,7 @@ test "in operator with list" {
     defer rt.deinit();
 
     const source = "{{ 2 in [1, 2, 3] }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -38,9 +36,7 @@ test "in operator with list" {
 }
 
 test "not in operator with list" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -49,7 +45,7 @@ test "not in operator with list" {
     defer rt.deinit();
 
     const source = "{{ 5 not in [1, 2, 3] }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -60,9 +56,7 @@ test "not in operator with list" {
 }
 
 test "in operator with string" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -71,7 +65,7 @@ test "in operator with string" {
     defer rt.deinit();
 
     const source = "{{ 'lo' in 'hello' }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -82,9 +76,7 @@ test "in operator with string" {
 }
 
 test "in operator with dict keys" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -93,17 +85,17 @@ test "in operator with dict keys" {
     defer rt.deinit();
 
     const source = "{{ 'name' in user }}";
-    
+
     // Create dict value
     const dict = try allocator.create(value.Dict);
     dict.* = value.Dict.init(allocator);
     // Note: Don't defer dict.deinit here - vars cleanup will handle it
-    
+
     // Note: Dict.set duplicates keys internally, so pass string literals directly.
     // Values are NOT duplicated by Dict.set, so we must dupe string values.
     const name_val = try allocator.dupe(u8, "Alice");
     try dict.set("name", value.Value{ .string = name_val });
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer cleanupVars(&vars, allocator);
     const user_key = try allocator.dupe(u8, "user");
@@ -116,9 +108,7 @@ test "in operator with dict keys" {
 }
 
 test "comparison operators" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -127,7 +117,7 @@ test "comparison operators" {
     defer rt.deinit();
 
     const source = "{{ (5 == 5) and (3 != 5) and (3 < 5) and (5 <= 5) and (10 > 2) and (10 >= 10) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 

@@ -6,9 +6,7 @@ const value = vibe_jinja.value;
 const context = vibe_jinja.context;
 
 test "node string literal init" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var str_lit = try nodes.StringLiteral.init(allocator, "hello", 1, "test.jinja");
     defer str_lit.deinit(allocator);
@@ -36,16 +34,14 @@ test "node float literal init" {
 }
 
 test "node name expression eval" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = vibe_jinja.environment.Environment.init(allocator);
     defer env.deinit();
 
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
-    
+
     var test_val = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer test_val.deinit(allocator);
     try vars.put(try allocator.dupe(u8, "test_var"), test_val);
@@ -65,9 +61,7 @@ test "node name expression eval" {
 }
 
 test "node binary expression eval" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = vibe_jinja.environment.Environment.init(allocator);
     defer env.deinit();
@@ -94,9 +88,7 @@ test "node binary expression eval" {
 }
 
 test "node template init" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var template = try nodes.Template.init(allocator, "test_template", 1, "test.jinja");
     defer template.deinit(allocator);
@@ -107,9 +99,7 @@ test "node template init" {
 }
 
 test "node output statement init" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var output = try nodes.Output.init(allocator, 1, "test.jinja");
     defer output.deinit(allocator);
@@ -119,9 +109,7 @@ test "node output statement init" {
 }
 
 test "node if statement init" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var cond = try nodes.BooleanLiteral.init(allocator, true, 1, "test.jinja");
     defer cond.deinit(allocator);
@@ -134,9 +122,7 @@ test "node if statement init" {
 }
 
 test "node for loop init" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var target = try nodes.Name.init(allocator, "item", 1, "test.jinja");
     defer target.deinit(allocator);
@@ -152,9 +138,7 @@ test "node for loop init" {
 }
 
 test "node block statement init" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var block = try nodes.Block.init(allocator, "content", 1, "test.jinja");
     defer block.deinit(allocator);
@@ -165,9 +149,7 @@ test "node block statement init" {
 }
 
 test "node macro init" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var macro = try nodes.Macro.init(allocator, "test_macro", 1, "test.jinja");
     defer macro.deinit(allocator);

@@ -765,7 +765,7 @@ pub const AotCompiler = struct {
     /// Generate filter chain (value | filter1 | filter2 | filter3)
     fn generateFilterChain(self: *Self, filter: *nodes.FilterExpr, base_temp: usize) Error!void {
         // Build chain of filters
-        var filters = std.ArrayList([]const u8){};
+        var filters = std.ArrayList([]const u8).empty;
         defer filters.deinit(self.allocator);
 
         var current: nodes.Expression = nodes.Expression{ .filter = filter };

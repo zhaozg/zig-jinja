@@ -6,9 +6,7 @@ const runtime = vibe_jinja.runtime;
 const value = vibe_jinja.value;
 
 test "unary negation integer" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -17,7 +15,7 @@ test "unary negation integer" {
     defer rt.deinit();
 
     const source = "{{ -5 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -28,9 +26,7 @@ test "unary negation integer" {
 }
 
 test "unary negation float" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -39,7 +35,7 @@ test "unary negation float" {
     defer rt.deinit();
 
     const source = "{{ -3.14 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -54,9 +50,7 @@ test "unary negation float" {
 }
 
 test "unary plus" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -65,7 +59,7 @@ test "unary plus" {
     defer rt.deinit();
 
     const source = "{{ +5 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -76,9 +70,7 @@ test "unary plus" {
 }
 
 test "logical NOT true" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -87,7 +79,7 @@ test "logical NOT true" {
     defer rt.deinit();
 
     const source = "{{ not true }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -98,9 +90,7 @@ test "logical NOT true" {
 }
 
 test "logical NOT false" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -109,7 +99,7 @@ test "logical NOT false" {
     defer rt.deinit();
 
     const source = "{{ not false }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -120,9 +110,7 @@ test "logical NOT false" {
 }
 
 test "logical NOT zero" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -131,7 +119,7 @@ test "logical NOT zero" {
     defer rt.deinit();
 
     const source = "{{ not 0 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -142,9 +130,7 @@ test "logical NOT zero" {
 }
 
 test "logical NOT non-zero" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -153,7 +139,7 @@ test "logical NOT non-zero" {
     defer rt.deinit();
 
     const source = "{{ not 42 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -164,9 +150,7 @@ test "logical NOT non-zero" {
 }
 
 test "unary negation in expression" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -175,7 +159,7 @@ test "unary negation in expression" {
     defer rt.deinit();
 
     const source = "{{ -5 + 3 }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -186,9 +170,7 @@ test "unary negation in expression" {
 }
 
 test "unary NOT in expression" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -197,7 +179,7 @@ test "unary NOT in expression" {
     defer rt.deinit();
 
     const source = "{{ not (5 == 3) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 

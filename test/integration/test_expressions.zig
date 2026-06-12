@@ -6,15 +6,13 @@ const runtime = vibe_jinja.runtime;
 const context = vibe_jinja.context;
 
 test "test expression is defined" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% if value is defined %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer {
         var iter = vars.iterator();
@@ -41,15 +39,13 @@ test "test expression is defined" {
 }
 
 test "test expression is undefined" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% if value is undefined %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
 
@@ -63,18 +59,16 @@ test "test expression is undefined" {
 }
 
 test "test expression is even" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% if num is even %}even{% else %}odd{% endif %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
-    
+
     const num_key = try allocator.dupe(u8, "num");
     defer allocator.free(num_key);
     try vars.put(num_key, context.Value{ .integer = 4 });
@@ -89,18 +83,16 @@ test "test expression is even" {
 }
 
 test "test expression is odd" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% if num is odd %}odd{% else %}even{% endif %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
-    
+
     const num_key = try allocator.dupe(u8, "num");
     defer allocator.free(num_key);
     try vars.put(num_key, context.Value{ .integer = 3 });
@@ -115,18 +107,16 @@ test "test expression is odd" {
 }
 
 test "test expression is divisibleby" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% if num is divisibleby(3) %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
-    
+
     const num_key = try allocator.dupe(u8, "num");
     defer allocator.free(num_key);
     try vars.put(num_key, context.Value{ .integer = 9 });
@@ -141,18 +131,16 @@ test "test expression is divisibleby" {
 }
 
 test "test expression is equalto" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% if value is equalto(42) %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
-    
+
     const value_key = try allocator.dupe(u8, "value");
     defer allocator.free(value_key);
     try vars.put(value_key, context.Value{ .integer = 42 });
@@ -167,15 +155,13 @@ test "test expression is equalto" {
 }
 
 test "test expression is string" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% if value is string %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer {
         var iter = vars.iterator();
@@ -185,7 +171,7 @@ test "test expression is string" {
         }
         vars.deinit();
     }
-    
+
     const value_key = try allocator.dupe(u8, "value");
     defer allocator.free(value_key);
     const value_val = context.Value{ .string = try allocator.dupe(u8, "test") };
@@ -202,18 +188,16 @@ test "test expression is string" {
 }
 
 test "test expression is number" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% if value is number %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
-    
+
     const value_key = try allocator.dupe(u8, "value");
     defer allocator.free(value_key);
     try vars.put(value_key, context.Value{ .integer = 42 });
@@ -228,15 +212,13 @@ test "test expression is number" {
 }
 
 test "test expression is empty" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% if value is empty %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer {
         var iter = vars.iterator();
@@ -246,7 +228,7 @@ test "test expression is empty" {
         }
         vars.deinit();
     }
-    
+
     const value_key = try allocator.dupe(u8, "value");
     defer allocator.free(value_key);
     const value_val = context.Value{ .string = try allocator.dupe(u8, "") };
@@ -263,19 +245,17 @@ test "test expression is empty" {
 }
 
 test "test expression is in" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% if item is in(items) %}yes{% else %}no{% endif %}";
-    
+
     const list = try allocator.create(vibe_jinja.value.List);
     list.* = vibe_jinja.value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     try list.append(vibe_jinja.value.Value{ .string = try allocator.dupe(u8, "a") });
     try list.append(vibe_jinja.value.Value{ .string = try allocator.dupe(u8, "b") });
     try list.append(vibe_jinja.value.Value{ .string = try allocator.dupe(u8, "c") });
@@ -293,7 +273,7 @@ test "test expression is in" {
     const items_key = try allocator.dupe(u8, "items");
     defer allocator.free(items_key);
     try vars.put(items_key, context.Value{ .list = list });
-    
+
     const item_key = try allocator.dupe(u8, "item");
     defer allocator.free(item_key);
     const item_val = context.Value{ .string = try allocator.dupe(u8, "b") };
@@ -310,19 +290,17 @@ test "test expression is in" {
 }
 
 test "test expression chain" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     // Test chaining: is defined and is number
     const source = "{% if value is defined and value is number %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
-    
+
     const value_key = try allocator.dupe(u8, "value");
     defer allocator.free(value_key);
     try vars.put(value_key, context.Value{ .integer = 42 });
@@ -337,15 +315,13 @@ test "test expression chain" {
 }
 
 test "test expression is filter" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% if 'upper' is filter %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
 
@@ -360,15 +336,13 @@ test "test expression is filter" {
 }
 
 test "test expression is test" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% if 'defined' is test %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
 
@@ -387,15 +361,13 @@ test "test expression is test" {
 // ============================================================================
 
 test "range global function in for loop" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% for i in range(5) %}{{ i }}{% endfor %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
 
@@ -410,15 +382,13 @@ test "range global function in for loop" {
 }
 
 test "range global function with start and stop" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% for i in range(2, 6) %}{{ i }}{% endfor %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
 
@@ -433,15 +403,13 @@ test "range global function with start and stop" {
 }
 
 test "range global function with step" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{% for i in range(0, 10, 2) %}{{ i }},{% endfor %}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
 
@@ -456,16 +424,14 @@ test "range global function with step" {
 }
 
 test "range global function with count filter" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     // Test using range with filters (Jinja2 pattern: range(10 - users|count))
     const source = "{{ range(5)|length }}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
 
@@ -480,15 +446,13 @@ test "range global function with count filter" {
 }
 
 test "lipsum global function generates text" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{{ lipsum(1, false) }}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer vars.deinit();
 

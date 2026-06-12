@@ -14,9 +14,7 @@ const tests_mod = vibe_jinja.tests;
 // ============================================================================
 
 test "async rendering basic" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -39,9 +37,7 @@ test "async rendering basic" {
 }
 
 test "async disabled returns error" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -59,9 +55,7 @@ test "async disabled returns error" {
 }
 
 test "async filter execution" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -94,9 +88,7 @@ test "async filter execution" {
 }
 
 test "async test execution" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -129,9 +121,7 @@ test "async test execution" {
 }
 
 test "async loader" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -154,9 +144,7 @@ test "async loader" {
 }
 
 test "async with filters and tests" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -201,9 +189,7 @@ test "async utils - isAwaitable with primitives" {
 }
 
 test "async utils - isAwaitable with async result" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Create a pending async result
     const pending = try allocator.create(value_mod.AsyncResult);
@@ -224,9 +210,7 @@ test "async utils - isAwaitable with async result" {
 }
 
 test "async utils - autoAwait with non-awaitable" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // autoAwait should return primitives unchanged
     const int_val = context.Value{ .integer = 42 };
@@ -236,9 +220,7 @@ test "async utils - autoAwait with non-awaitable" {
 }
 
 test "async utils - autoAwait with completed async result" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Create a completed async result
     const completed = try allocator.create(value_mod.AsyncResult);
@@ -257,9 +239,7 @@ test "async utils - autoAwait with completed async result" {
 }
 
 test "async utils - async tracker" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var tracker = async_utils.AsyncTracker.init(allocator);
     defer tracker.deinit();
@@ -298,9 +278,7 @@ test "async utils - async id generation" {
 // ============================================================================
 
 test "value - async result type" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Test pending async result
     const pending = try allocator.create(value_mod.AsyncResult);
@@ -315,9 +293,7 @@ test "value - async result type" {
 }
 
 test "value - callable type" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const callable = try allocator.create(value_mod.Callable);
     callable.* = value_mod.Callable.init(
@@ -334,9 +310,7 @@ test "value - callable type" {
 }
 
 test "value - async result to string" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Test pending async result to string
     const pending = try allocator.create(value_mod.AsyncResult);
@@ -353,9 +327,7 @@ test "value - async result to string" {
 }
 
 test "value - callable to string" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const callable = try allocator.create(value_mod.Callable);
     callable.* = value_mod.Callable.init(
@@ -379,9 +351,7 @@ test "value - callable to string" {
 // ============================================================================
 
 test "environment - add async filter" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -415,9 +385,7 @@ test "environment - add async filter" {
 }
 
 test "environment - add async test" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();

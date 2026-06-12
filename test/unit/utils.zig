@@ -5,9 +5,7 @@ const utils = vibe_jinja.utils;
 const value = vibe_jinja.value;
 
 test "Cycler" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const values = [_]value.Value{
         value.Value{ .string = try allocator.dupe(u8, "red") },
@@ -43,9 +41,7 @@ test "Cycler" {
 }
 
 test "Cycler reset" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const values = [_]value.Value{
         value.Value{ .integer = 1 },
@@ -57,18 +53,16 @@ test "Cycler reset" {
 
     _ = cycler.next();
     _ = cycler.next();
-    
+
     cycler.reset();
-    
+
     var val = cycler.next();
     defer val.deinit(allocator);
     try testing.expectEqual(@as(i64, 1), val.integer);
 }
 
 test "Joiner" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var joiner = try utils.Joiner.init(allocator, ", ");
     defer joiner.deinit();
@@ -91,9 +85,7 @@ test "Joiner" {
 }
 
 test "Joiner empty" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var joiner = try utils.Joiner.init(allocator, ", ");
     defer joiner.deinit();
@@ -105,9 +97,7 @@ test "Joiner empty" {
 }
 
 test "Namespace" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var ns = utils.Namespace.init(allocator);
     defer ns.deinit();
@@ -127,9 +117,7 @@ test "Namespace" {
 }
 
 test "Namespace toDict" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var ns = utils.Namespace.init(allocator);
     defer ns.deinit();
@@ -141,7 +129,7 @@ test "Namespace toDict" {
     defer dict_val.deinit(allocator);
 
     try testing.expect(dict_val == .dict);
-    
+
     const x_str = try allocator.dupe(u8, "x");
     defer allocator.free(x_str);
     const x_val = dict_val.dict.get(x_str).?;
@@ -149,9 +137,7 @@ test "Namespace toDict" {
 }
 
 test "generateLoremIpsum" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const text = try utils.generateLoremIpsum(allocator, 5);
     defer allocator.free(text);

@@ -6,9 +6,7 @@ const runtime = vibe_jinja.runtime;
 const value = vibe_jinja.value;
 
 test "test expression defined" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -17,7 +15,7 @@ test "test expression defined" {
     defer rt.deinit();
 
     const source = "{{ 'hello' is defined }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -28,9 +26,7 @@ test "test expression defined" {
 }
 
 test "test expression empty" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -39,7 +35,7 @@ test "test expression empty" {
     defer rt.deinit();
 
     const source = "{{ '' is empty }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -50,9 +46,7 @@ test "test expression empty" {
 }
 
 test "test expression even" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -61,7 +55,7 @@ test "test expression even" {
     defer rt.deinit();
 
     const source = "{{ 4 is even }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -72,9 +66,7 @@ test "test expression even" {
 }
 
 test "test expression odd" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -83,7 +75,7 @@ test "test expression odd" {
     defer rt.deinit();
 
     const source = "{{ 5 is odd }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -94,9 +86,7 @@ test "test expression odd" {
 }
 
 test "test expression divisibleby" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -105,7 +95,7 @@ test "test expression divisibleby" {
     defer rt.deinit();
 
     const source = "{{ 10 is divisibleby(5) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -116,9 +106,7 @@ test "test expression divisibleby" {
 }
 
 test "test expression equalto" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -127,7 +115,7 @@ test "test expression equalto" {
     defer rt.deinit();
 
     const source = "{{ 5 is equalto(5) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -138,9 +126,7 @@ test "test expression equalto" {
 }
 
 test "test expression string" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -149,7 +135,7 @@ test "test expression string" {
     defer rt.deinit();
 
     const source = "{{ 'hello' is string }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -160,9 +146,7 @@ test "test expression string" {
 }
 
 test "test expression number" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -171,7 +155,7 @@ test "test expression number" {
     defer rt.deinit();
 
     const source = "{{ 42 is number }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -182,9 +166,7 @@ test "test expression number" {
 }
 
 test "test expression boolean" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -193,7 +175,7 @@ test "test expression boolean" {
     defer rt.deinit();
 
     const source = "{{ true is boolean }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -204,9 +186,7 @@ test "test expression boolean" {
 }
 
 test "test expression integer" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -215,7 +195,7 @@ test "test expression integer" {
     defer rt.deinit();
 
     const source = "{{ 42 is integer }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -226,9 +206,7 @@ test "test expression integer" {
 }
 
 test "test expression float" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -237,7 +215,7 @@ test "test expression float" {
     defer rt.deinit();
 
     const source = "{{ 3.14 is float }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -248,9 +226,7 @@ test "test expression float" {
 }
 
 test "test expression mapping" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -259,12 +235,12 @@ test "test expression mapping" {
     defer rt.deinit();
 
     const source = "{{ user is mapping }}";
-    
+
     // Create dict value
     const dict = try allocator.create(value.Dict);
     dict.* = value.Dict.init(allocator);
     defer dict.deinit(allocator);
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const user_key = try allocator.dupe(u8, "user");
@@ -278,9 +254,7 @@ test "test expression mapping" {
 }
 
 test "test expression sequence" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -289,12 +263,12 @@ test "test expression sequence" {
     defer rt.deinit();
 
     const source = "{{ items is sequence }}";
-    
+
     // Create list value
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const items_key = try allocator.dupe(u8, "items");
@@ -308,9 +282,7 @@ test "test expression sequence" {
 }
 
 test "test expression iterable" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -319,7 +291,7 @@ test "test expression iterable" {
     defer rt.deinit();
 
     const source = "{{ 'hello' is iterable }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -330,9 +302,7 @@ test "test expression iterable" {
 }
 
 test "test expression none" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -341,7 +311,7 @@ test "test expression none" {
     defer rt.deinit();
 
     const source = "{{ null is none }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -356,9 +326,7 @@ test "test expression none" {
 // ============================================================================
 
 test "test expression lt" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -368,7 +336,7 @@ test "test expression lt" {
 
     // Test: {{ 2 is lt(3) }} -> true
     const source = "{{ 2 is lt(3) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -379,9 +347,7 @@ test "test expression lt" {
 }
 
 test "test expression lt false" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -391,7 +357,7 @@ test "test expression lt false" {
 
     // Test: {{ 2 is lt(2) }} -> false
     const source = "{{ 2 is lt(2) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -402,9 +368,7 @@ test "test expression lt false" {
 }
 
 test "test expression le" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -414,7 +378,7 @@ test "test expression le" {
 
     // Test: {{ 2 is le(2) }} -> true
     const source = "{{ 2 is le(2) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -425,9 +389,7 @@ test "test expression le" {
 }
 
 test "test expression le false" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -437,7 +399,7 @@ test "test expression le false" {
 
     // Test: {{ 2 is le(1) }} -> false
     const source = "{{ 2 is le(1) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -448,9 +410,7 @@ test "test expression le false" {
 }
 
 test "test expression gt" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -460,7 +420,7 @@ test "test expression gt" {
 
     // Test: {{ 2 is gt(1) }} -> true
     const source = "{{ 2 is gt(1) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -471,9 +431,7 @@ test "test expression gt" {
 }
 
 test "test expression gt false" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -483,7 +441,7 @@ test "test expression gt false" {
 
     // Test: {{ 2 is gt(2) }} -> false
     const source = "{{ 2 is gt(2) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -494,9 +452,7 @@ test "test expression gt false" {
 }
 
 test "test expression ge" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -506,7 +462,7 @@ test "test expression ge" {
 
     // Test: {{ 2 is ge(2) }} -> true
     const source = "{{ 2 is ge(2) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -517,9 +473,7 @@ test "test expression ge" {
 }
 
 test "test expression ge false" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -529,7 +483,7 @@ test "test expression ge false" {
 
     // Test: {{ 2 is ge(3) }} -> false
     const source = "{{ 2 is ge(3) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -540,9 +494,7 @@ test "test expression ge false" {
 }
 
 test "test expression ne" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -552,7 +504,7 @@ test "test expression ne" {
 
     // Test: {{ 2 is ne(3) }} -> true
     const source = "{{ 2 is ne(3) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -563,9 +515,7 @@ test "test expression ne" {
 }
 
 test "test expression ne false" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -575,7 +525,7 @@ test "test expression ne false" {
 
     // Test: {{ 2 is ne(2) }} -> false
     const source = "{{ 2 is ne(2) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -586,9 +536,7 @@ test "test expression ne false" {
 }
 
 test "test expression eq" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -598,7 +546,7 @@ test "test expression eq" {
 
     // Test: {{ 2 is eq(2) }} -> true (alias for equalto)
     const source = "{{ 2 is eq(2) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -609,9 +557,7 @@ test "test expression eq" {
 }
 
 test "test expression lessthan alias" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -621,7 +567,7 @@ test "test expression lessthan alias" {
 
     // Test: {{ 0 is lessthan(1) }} -> true
     const source = "{{ 0 is lessthan(1) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -632,9 +578,7 @@ test "test expression lessthan alias" {
 }
 
 test "test expression greaterthan alias" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -644,7 +588,7 @@ test "test expression greaterthan alias" {
 
     // Test: {{ 1 is greaterthan(0) }} -> true
     const source = "{{ 1 is greaterthan(0) }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
 
@@ -667,9 +611,7 @@ test "test expression greaterthan alias" {
 // This is tested through the unit tests in tests.zig
 
 test "test expression 42 is integer" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -688,9 +630,7 @@ test "test expression 42 is integer" {
 }
 
 test "test expression 3.14 is float" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -709,9 +649,7 @@ test "test expression 3.14 is float" {
 }
 
 test "test expression 42 is number" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -730,9 +668,7 @@ test "test expression 42 is number" {
 }
 
 test "test expression string is string" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -759,9 +695,7 @@ test "test expression string is string" {
 // =============================================================================
 
 test "test expression 2 is eq 2" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -780,9 +714,7 @@ test "test expression 2 is eq 2" {
 }
 
 test "test expression 2 is ne 3" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -801,9 +733,7 @@ test "test expression 2 is ne 3" {
 }
 
 test "test expression 2 is lt 3" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -822,9 +752,7 @@ test "test expression 2 is lt 3" {
 }
 
 test "test expression 2 is le 2" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -843,9 +771,7 @@ test "test expression 2 is le 2" {
 }
 
 test "test expression 2 is gt 1" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -864,9 +790,7 @@ test "test expression 2 is gt 1" {
 }
 
 test "test expression 2 is ge 2" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -902,9 +826,7 @@ test "test expression 2 is ge 2" {
 // =============================================================================
 
 test "test expression upper" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -924,9 +846,7 @@ test "test expression upper" {
 }
 
 test "test expression not upper" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -946,9 +866,7 @@ test "test expression not upper" {
 }
 
 test "test expression lower" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -968,9 +886,7 @@ test "test expression lower" {
 }
 
 test "test expression not lower" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();

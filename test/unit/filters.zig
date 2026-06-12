@@ -23,9 +23,7 @@ fn callFilter(
 // ============================================================================
 
 test "filter capitalize" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer input.deinit(allocator);
@@ -38,9 +36,7 @@ test "filter capitalize" {
 }
 
 test "filter lower" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "HELLO") };
     defer input.deinit(allocator);
@@ -53,9 +49,7 @@ test "filter lower" {
 }
 
 test "filter upper" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer input.deinit(allocator);
@@ -68,9 +62,7 @@ test "filter upper" {
 }
 
 test "filter trim" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "  hello  ") };
     defer input.deinit(allocator);
@@ -83,9 +75,7 @@ test "filter trim" {
 }
 
 test "filter length" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer input.deinit(allocator);
@@ -98,9 +88,7 @@ test "filter length" {
 }
 
 test "filter default with empty value" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "") };
     defer input.deinit(allocator);
@@ -117,9 +105,7 @@ test "filter default with empty value" {
 }
 
 test "filter default with non-empty value" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer input.deinit(allocator);
@@ -136,9 +122,7 @@ test "filter default with non-empty value" {
 }
 
 test "filter replace" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "hello world") };
     defer input.deinit(allocator);
@@ -158,9 +142,7 @@ test "filter replace" {
 }
 
 test "filter abs" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Test with positive integer
     const pos_int = value.Value{ .integer = 42 };
@@ -192,9 +174,7 @@ test "filter abs" {
 }
 
 test "filter reverse" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer input.deinit(allocator);
@@ -207,9 +187,7 @@ test "filter reverse" {
 }
 
 test "filter lstrip" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "  hello") };
     defer input.deinit(allocator);
@@ -222,9 +200,7 @@ test "filter lstrip" {
 }
 
 test "filter rstrip" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "hello  ") };
     defer input.deinit(allocator);
@@ -237,9 +213,7 @@ test "filter rstrip" {
 }
 
 test "filter length with list" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -257,9 +231,7 @@ test "filter length with list" {
 }
 
 test "filter length with dict" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const dict = try allocator.create(value.Dict);
     dict.* = value.Dict.init(allocator);
@@ -280,9 +252,7 @@ test "filter length with dict" {
 // ============================================================================
 
 test "filter title basic" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "foo bar") };
     defer input.deinit(allocator);
@@ -295,9 +265,7 @@ test "filter title basic" {
 }
 
 test "filter title with apostrophe" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "foo's bar") };
     defer input.deinit(allocator);
@@ -314,9 +282,7 @@ test "filter title with apostrophe" {
 // ============================================================================
 
 test "filter first" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -334,9 +300,7 @@ test "filter first" {
 }
 
 test "filter last" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -358,9 +322,7 @@ test "filter last" {
 // ============================================================================
 
 test "filter join" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -386,9 +348,7 @@ test "filter join" {
 // ============================================================================
 
 test "filter sum" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -413,9 +373,7 @@ test "filter sum" {
 // ============================================================================
 
 test "filter sort ascending" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -440,9 +398,7 @@ test "filter sort ascending" {
 // ============================================================================
 
 test "filter escape" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "<\">&") };
     defer input.deinit(allocator);
@@ -460,9 +416,7 @@ test "filter escape" {
 // ============================================================================
 
 test "filter round positive" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Test 2.7 rounds to 3 (default precision=0 returns integer)
     const input1 = value.Value{ .float = 2.7 };
@@ -480,9 +434,7 @@ test "filter round positive" {
 }
 
 test "filter round with precision" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Test 2.1234 rounded to 3 decimal places
     const input = value.Value{ .float = 2.1234 };
@@ -500,9 +452,7 @@ test "filter round with precision" {
 // ============================================================================
 
 test "filter wordcount" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "foo bar baz") };
     defer input.deinit(allocator);
@@ -519,9 +469,7 @@ test "filter wordcount" {
 // ============================================================================
 
 test "filter center" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "foo") };
     defer input.deinit(allocator);
@@ -540,9 +488,7 @@ test "filter center" {
 // ============================================================================
 
 test "filter truncate" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "Joel is a slug") };
     defer input.deinit(allocator);
@@ -562,9 +508,7 @@ test "filter truncate" {
 // ============================================================================
 
 test "filter striptags" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "<p>Hello <b>world</b></p>") };
     defer input.deinit(allocator);
@@ -581,9 +525,7 @@ test "filter striptags" {
 // ============================================================================
 
 test "filter int from string" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "42") };
     defer input.deinit(allocator);
@@ -596,9 +538,7 @@ test "filter int from string" {
 }
 
 test "filter int from float" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const input = value.Value{ .float = 32.32 };
 
@@ -610,9 +550,7 @@ test "filter int from float" {
 }
 
 test "filter float from string" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "32.32") };
     defer input.deinit(allocator);
@@ -625,9 +563,7 @@ test "filter float from string" {
 }
 
 test "filter float from integer" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const input = value.Value{ .integer = 42 };
 
@@ -643,9 +579,7 @@ test "filter float from integer" {
 // ============================================================================
 
 test "filter reverse unicode string" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "abc") };
     defer input.deinit(allocator);
@@ -662,9 +596,7 @@ test "filter reverse unicode string" {
 // ============================================================================
 
 test "filter batch" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -690,9 +622,7 @@ test "filter batch" {
 // ============================================================================
 
 test "filter unique" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -716,9 +646,7 @@ test "filter unique" {
 // ============================================================================
 
 test "filter min" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -736,9 +664,7 @@ test "filter min" {
 }
 
 test "filter max" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -756,9 +682,7 @@ test "filter max" {
 }
 
 test "filter min with empty list" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -772,9 +696,7 @@ test "filter min with empty list" {
 }
 
 test "filter max with empty list" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
@@ -792,9 +714,7 @@ test "filter max with empty list" {
 // ============================================================================
 
 test "filter mark_safe creates markup" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "<b>bold</b>") };
     defer input.deinit(allocator);
@@ -807,9 +727,7 @@ test "filter mark_safe creates markup" {
 }
 
 test "filter mark_unsafe converts markup to string" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     // Create Markup value
     var markup = try value.Markup.init(allocator, "<b>bold</b>");
@@ -825,9 +743,7 @@ test "filter mark_unsafe converts markup to string" {
 }
 
 test "filter mark_unsafe with plain string" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var input = value.Value{ .string = try allocator.dupe(u8, "hello") };
     defer input.deinit(allocator);
@@ -840,9 +756,7 @@ test "filter mark_unsafe with plain string" {
 }
 
 test "filter mark_unsafe with integer" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     const input = value.Value{ .integer = 42 };
 
@@ -858,9 +772,7 @@ test "filter mark_unsafe with integer" {
 // ============================================================================
 
 test "filter alias d for default" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -887,9 +799,7 @@ test "filter alias d for default" {
 }
 
 test "filter alias e for escape" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -912,9 +822,7 @@ test "filter alias e for escape" {
 }
 
 test "filter aliases exist in environment" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -932,9 +840,7 @@ test "filter aliases exist in environment" {
 // =============================================================================
 
 test "template filter capitalize" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -954,9 +860,7 @@ test "template filter capitalize" {
 }
 
 test "template filter center" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -976,9 +880,7 @@ test "template filter center" {
 }
 
 test "template filter default with missing" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -998,9 +900,7 @@ test "template filter default with missing" {
 }
 
 test "template filter default with given" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1021,9 +921,7 @@ test "template filter default with given" {
 }
 
 test "template filter escape" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1046,9 +944,7 @@ test "template filter escape" {
 // These filters are tested through the unit tests that call filter functions directly
 
 test "template filter length" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1068,9 +964,7 @@ test "template filter length" {
 }
 
 test "template filter lower" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1090,9 +984,7 @@ test "template filter lower" {
 }
 
 test "template filter upper" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1112,9 +1004,7 @@ test "template filter upper" {
 }
 
 test "template filter trim" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1134,9 +1024,7 @@ test "template filter trim" {
 }
 
 test "template filter title" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1156,9 +1044,7 @@ test "template filter title" {
 }
 
 test "template filter replace" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1178,9 +1064,7 @@ test "template filter replace" {
 }
 
 test "template filter reverse" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1200,9 +1084,7 @@ test "template filter reverse" {
 }
 
 test "template filter abs" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1223,9 +1105,7 @@ test "template filter abs" {
 }
 
 test "template filter round" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1245,9 +1125,7 @@ test "template filter round" {
 }
 
 test "template filter int" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1267,9 +1145,7 @@ test "template filter int" {
 }
 
 test "template filter float" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1290,9 +1166,7 @@ test "template filter float" {
 }
 
 test "template filter wordcount" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1312,9 +1186,7 @@ test "template filter wordcount" {
 }
 
 test "template filter truncate" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1339,9 +1211,7 @@ test "template filter truncate" {
 // require complex memory management that is better tested through integration tests.
 
 test "template filter striptags" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -1361,9 +1231,7 @@ test "template filter striptags" {
 }
 
 test "template filter chained" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();

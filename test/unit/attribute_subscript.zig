@@ -16,9 +16,7 @@ fn cleanupVars(vars: *std.StringHashMap(value.Value), allocator: std.mem.Allocat
 }
 
 test "dict attribute access" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -27,17 +25,17 @@ test "dict attribute access" {
     defer rt.deinit();
 
     const source = "{{ user.name }}";
-    
+
     // Create dict value
     const dict = try allocator.create(value.Dict);
     dict.* = value.Dict.init(allocator);
     // Note: Don't defer dict.deinit here - vars cleanup will handle it
-    
+
     // Note: Dict.set duplicates keys internally, so pass string literals directly.
     // Values are NOT duplicated by Dict.set, so we must dupe string values.
     const name_val = try allocator.dupe(u8, "Alice");
     try dict.set("name", value.Value{ .string = name_val });
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer cleanupVars(&vars, allocator);
     const user_key = try allocator.dupe(u8, "user");
@@ -50,9 +48,7 @@ test "dict attribute access" {
 }
 
 test "list subscript access" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -61,17 +57,17 @@ test "list subscript access" {
     defer rt.deinit();
 
     const source = "{{ items[0] }}";
-    
+
     // Create list value
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     // Note: Don't defer list.deinit here - vars cleanup will handle it
-    
+
     const item1 = value.Value{ .string = try allocator.dupe(u8, "first") };
     const item2 = value.Value{ .string = try allocator.dupe(u8, "second") };
     try list.append(item1);
     try list.append(item2);
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer cleanupVars(&vars, allocator);
     const items_key = try allocator.dupe(u8, "items");
@@ -84,9 +80,7 @@ test "list subscript access" {
 }
 
 test "dict subscript access" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -95,16 +89,16 @@ test "dict subscript access" {
     defer rt.deinit();
 
     const source = "{{ user['name'] }}";
-    
+
     // Create dict value
     const dict = try allocator.create(value.Dict);
     dict.* = value.Dict.init(allocator);
     // Note: Don't defer dict.deinit here - vars cleanup will handle it
-    
+
     // Note: Dict.set duplicates keys internally, so pass string literals directly.
     const name_val = try allocator.dupe(u8, "Bob");
     try dict.set("name", value.Value{ .string = name_val });
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer cleanupVars(&vars, allocator);
     const user_key = try allocator.dupe(u8, "user");
@@ -117,9 +111,7 @@ test "dict subscript access" {
 }
 
 test "string subscript access" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -128,7 +120,7 @@ test "string subscript access" {
     defer rt.deinit();
 
     const source = "{{ text[0] }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer cleanupVars(&vars, allocator);
     const text_key = try allocator.dupe(u8, "text");
@@ -142,9 +134,7 @@ test "string subscript access" {
 }
 
 test "chained attribute and subscript access" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -153,23 +143,23 @@ test "chained attribute and subscript access" {
     defer rt.deinit();
 
     const source = "{{ user.items[0] }}";
-    
+
     // Create nested structure: user.items[0]
     const items_list = try allocator.create(value.List);
     items_list.* = value.List.init(allocator);
     // Note: Don't defer deinit here - user_dict takes ownership via Dict.set
-    
+
     const item1 = value.Value{ .string = try allocator.dupe(u8, "item1") };
     try items_list.append(item1);
-    
+
     const user_dict = try allocator.create(value.Dict);
     user_dict.* = value.Dict.init(allocator);
     // Note: Don't defer user_dict.deinit here - vars cleanup will handle it
-    
+
     // Note: Dict.set duplicates keys internally, so pass string literals directly.
     // The list value is NOT copied - user_dict takes ownership of items_list.
     try user_dict.set("items", value.Value{ .list = items_list });
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer cleanupVars(&vars, allocator);
     const user_key = try allocator.dupe(u8, "user");

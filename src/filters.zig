@@ -86,6 +86,13 @@ const value_mod = @import("value.zig");
 const environment = @import("environment.zig");
 const utils = @import("utils.zig");
 
+/// Get current timestamp in seconds (cross-platform)
+fn currentTimestamp() i64 {
+    var ts: std.c.timespec = undefined;
+    const rc = std.c.clock_gettime(std.c.CLOCK.REALTIME, &ts);
+    if (rc != 0) return 0;
+    return @as(i64, @intCast(ts.sec));
+}
 /// Re-export Value type for convenience
 pub const Value = value_mod.Value;
 
@@ -469,7 +476,7 @@ pub const BuiltinFilters = struct {
         const new_str_val = try args[1].toString(allocator);
         defer allocator.free(new_str_val);
 
-        var result = std.ArrayList(u8){};
+        var result = std.ArrayList(u8).empty;
         defer result.deinit(allocator);
 
         var i: usize = 0;
@@ -510,7 +517,7 @@ pub const BuiltinFilters = struct {
         const str = try val.toString(allocator);
         defer allocator.free(str);
 
-        const trimmed = std.mem.trimLeft(u8, str, " \t\n\r");
+        const trimmed = std.mem.trimStart(u8, str, " \t\n\r");
         return Value{ .string = try allocator.dupe(u8, trimmed) };
     }
 
@@ -524,7 +531,7 @@ pub const BuiltinFilters = struct {
         const str = try val.toString(allocator);
         defer allocator.free(str);
 
-        const trimmed = std.mem.trimRight(u8, str, " \t\n\r");
+        const trimmed = std.mem.trimEnd(u8, str, " \t\n\r");
         return Value{ .string = try allocator.dupe(u8, trimmed) };
     }
 
@@ -656,7 +663,7 @@ pub const BuiltinFilters = struct {
         const format_str = try val.toString(allocator);
         defer allocator.free(format_str);
 
-        var result = std.ArrayList(u8){};
+        var result = std.ArrayList(u8).empty;
         defer result.deinit(allocator);
 
         var arg_index: usize = 0;
@@ -693,7 +700,7 @@ pub const BuiltinFilters = struct {
         defer if (args.len > 0) allocator.free(prefix_str);
         const prefix = if (args.len > 0) prefix_str else "    ";
 
-        var result = std.ArrayList(u8){};
+        var result = std.ArrayList(u8).empty;
         defer result.deinit(allocator);
 
         var line_start: usize = 0;
@@ -733,7 +740,7 @@ pub const BuiltinFilters = struct {
 
         return switch (val) {
             .list => |l| {
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(allocator);
 
                 for (l.items.items, 0..) |item, i| {
@@ -765,7 +772,7 @@ pub const BuiltinFilters = struct {
         const str = try val.toString(allocator);
         defer allocator.free(str);
 
-        var result = std.ArrayList(u8){};
+        var result = std.ArrayList(u8).empty;
         defer result.deinit(allocator);
 
         var i: usize = 0;
@@ -875,7 +882,7 @@ pub const BuiltinFilters = struct {
         const str = try val.toString(allocator);
         defer allocator.free(str);
 
-        var result = std.ArrayList(u8){};
+        var result = std.ArrayList(u8).empty;
         defer result.deinit(allocator);
 
         for (str) |c| {
@@ -904,7 +911,7 @@ pub const BuiltinFilters = struct {
 
         // Simple URL detection - just wrap URLs in <a> tags
         // This is a simplified version
-        var result = std.ArrayList(u8){};
+        var result = std.ArrayList(u8).empty;
         defer result.deinit(allocator);
 
         var i: usize = 0;
@@ -976,7 +983,7 @@ pub const BuiltinFilters = struct {
         const width = if (args.len > 0) (args[0].toInteger() orelse 79) else 79;
         _ = if (args.len > 1) (args[1].toBoolean() catch true) else true; // break_long_words - not fully implemented yet
 
-        var result = std.ArrayList(u8){};
+        var result = std.ArrayList(u8).empty;
         defer result.deinit(allocator);
 
         var line_len: usize = 0;
@@ -1039,7 +1046,7 @@ pub const BuiltinFilters = struct {
 
         return switch (val) {
             .dict => |d| {
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(allocator);
 
                 var iter = d.map.iterator();
@@ -1053,7 +1060,7 @@ pub const BuiltinFilters = struct {
                     defer allocator.free(val_str);
 
                     // Escape XML special chars in value
-                    var escaped_val = std.ArrayList(u8){};
+                    var escaped_val = std.ArrayList(u8).empty;
                     defer escaped_val.deinit(allocator);
                     for (val_str) |c| {
                         switch (c) {
@@ -1486,7 +1493,7 @@ pub const BuiltinFilters = struct {
 
                     pub fn getAttribute(sort_ctx: @This(), item: Value, attr_path: []const u8) !Value {
                         // Split attribute path by dots
-                        var parts = std.ArrayList([]const u8){};
+                        var parts = std.ArrayList([]const u8).empty;
                         defer parts.deinit(sort_ctx.allocator);
 
                         var iter = std.mem.splitSequence(u8, attr_path, ".");
@@ -1552,9 +1559,9 @@ pub const BuiltinFilters = struct {
                             return std.mem.order(u8, a_str, b_str) == .lt;
                         } else {
                             // Case-insensitive comparison
-                            var a_lower = std.ArrayList(u8){};
+                            var a_lower = std.ArrayList(u8).empty;
                             defer a_lower.deinit(sort_ctx.allocator);
-                            var b_lower = std.ArrayList(u8){};
+                            var b_lower = std.ArrayList(u8).empty;
                             defer b_lower.deinit(sort_ctx.allocator);
 
                             for (a_str) |c| {
@@ -1657,7 +1664,7 @@ pub const BuiltinFilters = struct {
                 const result_list = try allocator.create(value_mod.List);
                 result_list.* = value_mod.List.init(allocator);
 
-                var seen = std.ArrayList(Value){};
+                var seen = std.ArrayList(Value).empty;
                 defer seen.deinit(allocator);
 
                 for (l.items.items) |item| {
@@ -1838,7 +1845,7 @@ pub const BuiltinFilters = struct {
                 result_list.* = value_mod.List.init(allocator);
 
                 // Collect entries
-                var entries = std.ArrayList(struct { key: []const u8, value: Value }){};
+                var entries = std.ArrayList(struct { key: []const u8, value: Value }).empty;
                 defer entries.deinit(allocator);
 
                 var iter = d.map.iterator();
@@ -1857,9 +1864,9 @@ pub const BuiltinFilters = struct {
                             if (case_sensitive) {
                                 should_swap = std.mem.order(u8, entries.items[i].key, entries.items[i + 1].key) == .gt;
                             } else {
-                                var a_lower = std.ArrayList(u8){};
+                                var a_lower = std.ArrayList(u8).empty;
                                 defer a_lower.deinit(allocator);
-                                var b_lower = std.ArrayList(u8){};
+                                var b_lower = std.ArrayList(u8).empty;
                                 defer b_lower.deinit(allocator);
 
                                 for (entries.items[i].key) |c| {
@@ -2285,7 +2292,7 @@ pub const BuiltinFilters = struct {
                     return Value{ .null = {} };
                 }
                 // Simple random - use index based on current time
-                const index = @as(usize, @intCast(@mod(std.time.timestamp(), @as(i64, @intCast(l.items.items.len)))));
+                const index = @as(usize, @intCast(@mod(currentTimestamp(), @as(i64, @intCast(l.items.items.len)))));
                 return l.items.items[index];
             },
             else => val,
@@ -2382,7 +2389,7 @@ pub const BuiltinFilters = struct {
         return switch (val) {
             .string => |s| {
                 // Escape JSON special characters
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(allocator);
                 try result.append(allocator, '"');
                 for (s) |c| {
@@ -2414,7 +2421,7 @@ pub const BuiltinFilters = struct {
                 return Value{ .string = try allocator.dupe(u8, "null") };
             },
             .list => |l| {
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(allocator);
                 try result.append(allocator, '[');
                 for (l.items.items, 0..) |item, i| {
@@ -2431,7 +2438,7 @@ pub const BuiltinFilters = struct {
                 return Value{ .string = try result.toOwnedSlice(allocator) };
             },
             .dict => |d| {
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(allocator);
                 try result.append(allocator, '{');
                 var iter = d.map.iterator();
@@ -2461,7 +2468,7 @@ pub const BuiltinFilters = struct {
             },
             .markup => |m| {
                 // Treat markup as string for JSON purposes
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(allocator);
                 try result.append(allocator, '"');
                 for (m.content) |c| {
@@ -2493,7 +2500,7 @@ pub const BuiltinFilters = struct {
                     if (maybe_str) |str| {
                         defer allocator.free(str);
                         // Escape and wrap in quotes
-                        var result = std.ArrayList(u8){};
+                        var result = std.ArrayList(u8).empty;
                         defer result.deinit(allocator);
                         try result.append(allocator, '"');
                         for (str) |c| {
@@ -2520,7 +2527,7 @@ pub const BuiltinFilters = struct {
     fn tojsonPretty(allocator: std.mem.Allocator, val: Value, indent_size: usize, depth: usize, kwargs: *const std.StringHashMap(Value), ctx: ?*context.Context, env: ?*environment.Environment) !Value {
         return switch (val) {
             .string => |s| {
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(allocator);
                 try result.append(allocator, '"');
                 for (s) |c| {
@@ -2552,7 +2559,7 @@ pub const BuiltinFilters = struct {
                 if (l.items.items.len == 0) {
                     return Value{ .string = try allocator.dupe(u8, "[]") };
                 }
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(allocator);
                 try result.appendSlice(allocator, "[\n");
                 const inner_indent = depth + 1;
@@ -2577,7 +2584,7 @@ pub const BuiltinFilters = struct {
                 if (d.map.count() == 0) {
                     return Value{ .string = try allocator.dupe(u8, "{}") };
                 }
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(allocator);
                 try result.appendSlice(allocator, "{\n");
                 const inner_indent = depth + 1;
@@ -2617,7 +2624,7 @@ pub const BuiltinFilters = struct {
                 return Value{ .string = try allocator.dupe(u8, "null") };
             },
             .markup => |m| {
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(allocator);
                 try result.append(allocator, '"');
                 for (m.content) |c| {
@@ -2646,7 +2653,7 @@ pub const BuiltinFilters = struct {
                 if (custom.toString(allocator)) |maybe_str| {
                     if (maybe_str) |str| {
                         defer allocator.free(str);
-                        var result = std.ArrayList(u8){};
+                        var result = std.ArrayList(u8).empty;
                         defer result.deinit(allocator);
                         try result.append(allocator, '"');
                         for (str) |c| {

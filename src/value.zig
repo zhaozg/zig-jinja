@@ -511,7 +511,7 @@ pub const Value = union(enum) {
             .null => try allocator.dupe(u8, ""),
             .list => |l| {
                 // Convert list to string representation
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(allocator);
                 try result.append(allocator, '[');
                 for (l.items.items, 0..) |item, i| {
@@ -525,7 +525,7 @@ pub const Value = union(enum) {
             },
             .dict => |d| {
                 // Convert dict to string representation
-                var result = std.ArrayList(u8){};
+                var result = std.ArrayList(u8).empty;
                 defer result.deinit(allocator);
                 try result.append(allocator, '{');
                 var iter = d.map.iterator();

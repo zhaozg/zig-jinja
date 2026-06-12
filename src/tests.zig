@@ -180,7 +180,7 @@ pub const Test = struct {
 /// This is a performance optimization for the most frequently used tests
 pub const BuiltinTestMap = std.StaticStringMap(TestFn).initComptime(.{
     .{ "defined", BuiltinTests.defined },
-    .{ "undefined", BuiltinTests.@"undefined" },
+    .{ "undefined", BuiltinTests.undefined },
     .{ "equalto", BuiltinTests.equalto },
     .{ "eq", BuiltinTests.equalto }, // alias
     .{ "even", BuiltinTests.even },
@@ -193,8 +193,8 @@ pub const BuiltinTestMap = std.StaticStringMap(TestFn).initComptime(.{
     .{ "empty", BuiltinTests.empty },
     .{ "none", BuiltinTests.none },
     .{ "boolean", BuiltinTests.boolean },
-    .{ "false", BuiltinTests.@"false" },
-    .{ "true", BuiltinTests.@"true" },
+    .{ "false", BuiltinTests.false },
+    .{ "true", BuiltinTests.true },
     .{ "integer", BuiltinTests.integer },
     .{ "float", BuiltinTests.float },
     .{ "mapping", BuiltinTests.mapping },
@@ -203,7 +203,7 @@ pub const BuiltinTestMap = std.StaticStringMap(TestFn).initComptime(.{
     .{ "callable", BuiltinTests.callable },
     .{ "sameas", BuiltinTests.sameas },
     .{ "escaped", BuiltinTests.escaped },
-    .{ "in", BuiltinTests.@"in" },
+    .{ "in", BuiltinTests.in },
     .{ "ne", BuiltinTests.ne },
     .{ "lt", BuiltinTests.lt },
     .{ "le", BuiltinTests.le },

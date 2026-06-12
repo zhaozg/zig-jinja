@@ -336,7 +336,7 @@ pub const Template = struct {
                 .filename = filename,
                 .environment = null,
             },
-            .body = std.ArrayList(*Stmt){},
+            .body = std.ArrayList(*Stmt).empty,
             .blocks = std.StringHashMap(*Block).init(allocator),
             .name = null,
             .parent = null,
@@ -489,7 +489,7 @@ pub const Output = struct {
                 .tag = .output,
             },
             .content = try allocator.dupe(u8, content),
-            .nodes = std.ArrayList(Expression){},
+            .nodes = std.ArrayList(Expression).empty,
         };
     }
 
@@ -505,7 +505,7 @@ pub const Output = struct {
                 .tag = .output,
             },
             .content = "",
-            .nodes = std.ArrayList(Expression){},
+            .nodes = std.ArrayList(Expression).empty,
         };
     }
 
@@ -530,7 +530,7 @@ pub const Output = struct {
         }
 
         // Expression output - evaluate each expression and convert to string
-        var result = std.ArrayList(u8){};
+        var result = std.ArrayList(u8).empty;
         defer result.deinit(allocator);
 
         for (self.nodes.items) |*expr| {
@@ -570,7 +570,7 @@ pub const Block = struct {
                 .tag = .block,
             },
             .name = try allocator.dupe(u8, name),
-            .body = std.ArrayList(*Stmt){},
+            .body = std.ArrayList(*Stmt).empty,
             .required = false,
             .scoped = false,
         };
@@ -705,7 +705,7 @@ pub const FromImport = struct {
                 .tag = .from_import,
             },
             .template = template,
-            .imports = std.ArrayList([]const u8){},
+            .imports = std.ArrayList([]const u8).empty,
             .with_context = false,
         };
     }
@@ -746,8 +746,8 @@ pub const For = struct {
             },
             .target = target,
             .iter = iter,
-            .body = std.ArrayList(*Stmt){},
-            .else_body = std.ArrayList(*Stmt){},
+            .body = std.ArrayList(*Stmt).empty,
+            .else_body = std.ArrayList(*Stmt).empty,
         };
     }
 
@@ -792,10 +792,10 @@ pub const If = struct {
                 .tag = .if_stmt,
             },
             .condition = condition,
-            .body = std.ArrayList(*Stmt){},
-            .elif_conditions = std.ArrayList(Expression){},
-            .elif_bodies = std.ArrayList(std.ArrayList(*Stmt)){},
-            .else_body = std.ArrayList(*Stmt){},
+            .body = std.ArrayList(*Stmt).empty,
+            .elif_conditions = std.ArrayList(Expression).empty,
+            .elif_bodies = std.ArrayList(std.ArrayList(*Stmt)).empty,
+            .else_body = std.ArrayList(*Stmt).empty,
         };
     }
 
@@ -1013,7 +1013,7 @@ pub const Macro = struct {
             },
             .name = try allocator.dupe(u8, name),
             .args = std.ArrayList(MacroArg).empty,
-            .body = std.ArrayList(*Stmt){},
+            .body = std.ArrayList(*Stmt).empty,
             .catch_varargs = false,
             .catch_kwargs = false,
         };
@@ -1055,7 +1055,7 @@ pub const Call = struct {
                 .tag = .call,
             },
             .macro_expr = macro_expr,
-            .args = std.ArrayList(Expression){},
+            .args = std.ArrayList(Expression).empty,
             .kwargs = std.StringHashMap(Expression).init(allocator),
         };
     }
@@ -1097,7 +1097,7 @@ pub const CallBlock = struct {
                 .tag = .call_block,
             },
             .call_expr = call_expr,
-            .body = std.ArrayList(*Stmt){},
+            .body = std.ArrayList(*Stmt).empty,
         };
     }
 
@@ -1199,9 +1199,9 @@ pub const With = struct {
                 },
                 .tag = .with,
             },
-            .targets = std.ArrayList([]const u8){},
-            .values = std.ArrayList(Expression){},
-            .body = std.ArrayList(*Stmt){},
+            .targets = std.ArrayList([]const u8).empty,
+            .values = std.ArrayList(Expression).empty,
+            .body = std.ArrayList(*Stmt).empty,
         };
     }
 
@@ -1243,7 +1243,7 @@ pub const FilterBlock = struct {
                 .tag = .filter_block,
             },
             .filter_expr = filter_expr,
-            .body = std.ArrayList(*Stmt){},
+            .body = std.ArrayList(*Stmt).empty,
         };
     }
 
@@ -1576,7 +1576,7 @@ pub const ListLiteral = struct {
                 .filename = filename,
                 .environment = null,
             },
-            .elements = std.ArrayList(Expression){},
+            .elements = std.ArrayList(Expression).empty,
         };
     }
 
@@ -1807,7 +1807,7 @@ pub const CallExpr = struct {
                 .environment = null,
             },
             .func = func,
-            .args = std.ArrayList(Expression){},
+            .args = std.ArrayList(Expression).empty,
             .kwargs = std.StringHashMap(Expression).init(allocator),
         };
     }
@@ -2340,7 +2340,7 @@ pub const Expression = union(enum) {
         };
 
         // Evaluate filter arguments
-        var filter_args = std.ArrayList(value_mod.Value){};
+        var filter_args = std.ArrayList(value_mod.Value).empty;
         defer {
             for (filter_args.items) |*arg| {
                 arg.deinit(allocator);
@@ -2440,7 +2440,7 @@ pub const Expression = union(enum) {
         };
 
         // Evaluate test arguments
-        var test_args = std.ArrayList(value_mod.Value){};
+        var test_args = std.ArrayList(value_mod.Value).empty;
         defer {
             for (test_args.items) |*arg| {
                 arg.deinit(allocator);
@@ -2506,7 +2506,7 @@ pub const Expression = union(enum) {
             // Check if it's a macro
             if (ctx.getMacro(func_name)) |_| {
                 // Convert to Expression list for callMacro
-                var expr_args = std.ArrayList(Expression){};
+                var expr_args = std.ArrayList(Expression).empty;
                 defer expr_args.deinit(allocator);
                 for (node.args.items) |arg| {
                     try expr_args.append(allocator, arg);
@@ -2584,7 +2584,7 @@ pub const Expression = union(enum) {
     /// Evaluate Concat expression - concatenate expressions as strings
     fn evalConcat(self: *const Expression, node: *Concat, ctx: *context_mod.Context, allocator: std.mem.Allocator) !value_mod.Value {
         _ = self;
-        var result = std.ArrayList(u8){};
+        var result = std.ArrayList(u8).empty;
         defer result.deinit(allocator);
 
         // Evaluate and concatenate all expressions
@@ -2902,7 +2902,7 @@ pub const Expression = union(enum) {
             .string => |l| switch (right) {
                 .integer => |r| {
                     if (r < 0) return exceptions.TemplateError.RuntimeError;
-                    var result = std.ArrayList(u8){};
+                    var result = std.ArrayList(u8).empty;
                     defer result.deinit(allocator);
                     var i: i64 = 0;
                     while (i < r) : (i += 1) {

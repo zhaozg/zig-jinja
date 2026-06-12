@@ -251,7 +251,7 @@ pub const Parser = struct {
         _ = self.stream.next(); // consume RAW_BEGIN
 
         // Collect raw content until RAW_END
-        var content = std.ArrayList(u8){};
+        var content = std.ArrayList(u8).empty;
         defer content.deinit(self.allocator);
 
         while (self.stream.hasNext()) {
@@ -272,7 +272,7 @@ pub const Parser = struct {
         // Create output node with raw content
         const owned_content = try content.toOwnedSlice(self.allocator);
         defer self.allocator.free(owned_content);
-        
+
         const output = try self.allocator.create(nodes.Output);
         output.* = try nodes.Output.initPlainText(self.allocator, owned_content, raw_token.lineno, raw_token.filename);
         // Output extends Stmt, so we can cast it
@@ -337,7 +337,7 @@ pub const Parser = struct {
 
     /// Parse plain text output
     fn parsePlainText(self: *Self) !?*nodes.Stmt {
-        var text = std.ArrayList(u8){};
+        var text = std.ArrayList(u8).empty;
         defer text.deinit(self.allocator);
 
         const start_token = self.stream.current() orelse return null;
@@ -1014,7 +1014,7 @@ pub const Parser = struct {
         _ = self.stream.next(); // consume LPAREN
         self.skipWhitespace();
 
-        var args = std.ArrayList(nodes.Expression){};
+        var args = std.ArrayList(nodes.Expression).empty;
         errdefer {
             for (args.items) |*arg| {
                 arg.deinit(self.allocator);
@@ -1165,7 +1165,7 @@ pub const Parser = struct {
             self.skipWhitespace();
 
             // Parse filter arguments (if any)
-            var args = std.ArrayList(nodes.Expression){};
+            var args = std.ArrayList(nodes.Expression).empty;
             errdefer {
                 for (args.items) |*arg| {
                     arg.deinit(self.allocator);
@@ -1500,11 +1500,11 @@ pub const Parser = struct {
 
                 // Check if this is slice syntax (starts with : or has : after expression)
                 const first_token = self.stream.current() orelse return exceptions.TemplateError.SyntaxError;
-                
+
                 if (first_token.kind == .COLON) {
                     // Slice starting with : like [:stop] or [:]
                     const slice_expr = try self.parseSlice(null, next_token.lineno, next_token.filename);
-                    
+
                     const getitem_node = try self.allocator.create(nodes.Getitem);
                     getitem_node.* = nodes.Getitem.init(current_expr, slice_expr, next_token.lineno, next_token.filename);
                     current_expr = nodes.Expression{ .getitem = getitem_node };
@@ -1514,18 +1514,18 @@ pub const Parser = struct {
                     self.skipWhitespace();
 
                     const after_first = self.stream.current() orelse return exceptions.TemplateError.SyntaxError;
-                    
+
                     if (after_first.kind == .COLON) {
                         // This is slice syntax [start:...]
                         const slice_expr = try self.parseSlice(first_expr, next_token.lineno, next_token.filename);
-                        
+
                         const getitem_node = try self.allocator.create(nodes.Getitem);
                         getitem_node.* = nodes.Getitem.init(current_expr, slice_expr, next_token.lineno, next_token.filename);
                         current_expr = nodes.Expression{ .getitem = getitem_node };
                     } else if (after_first.kind == .RBRACKET) {
                         // Regular index access [index]
                         _ = self.stream.next();
-                        
+
                         const getitem_node = try self.allocator.create(nodes.Getitem);
                         getitem_node.* = nodes.Getitem.init(current_expr, first_expr, next_token.lineno, next_token.filename);
                         current_expr = nodes.Expression{ .getitem = getitem_node };
@@ -1557,7 +1557,7 @@ pub const Parser = struct {
         // Parse stop expression (optional)
         var stop: ?nodes.Expression = null;
         const after_colon = self.stream.current() orelse return exceptions.TemplateError.SyntaxError;
-        
+
         if (after_colon.kind != .COLON and after_colon.kind != .RBRACKET) {
             // There's a stop expression
             stop = try self.parseExpression() orelse return exceptions.TemplateError.SyntaxError;
@@ -1567,11 +1567,11 @@ pub const Parser = struct {
         // Check for second colon (step)
         var step: ?nodes.Expression = null;
         const after_stop = self.stream.current() orelse return exceptions.TemplateError.SyntaxError;
-        
+
         if (after_stop.kind == .COLON) {
             _ = self.stream.next(); // consume second colon
             self.skipWhitespace();
-            
+
             const after_second_colon = self.stream.current() orelse return exceptions.TemplateError.SyntaxError;
             if (after_second_colon.kind != .RBRACKET) {
                 // There's a step expression
@@ -1590,7 +1590,7 @@ pub const Parser = struct {
         // Create Slice node
         const slice_node = try self.allocator.create(nodes.Slice);
         slice_node.* = nodes.Slice.init(start, stop, step, lineno, filename);
-        
+
         return nodes.Expression{ .slice = slice_node };
     }
 
@@ -1637,7 +1637,7 @@ pub const Parser = struct {
         _ = self.stream.next();
 
         // Parse body (statements until {% endfor %})
-        var body = std.ArrayList(*nodes.Stmt){};
+        var body = std.ArrayList(*nodes.Stmt).empty;
         errdefer {
             for (body.items) |stmt| {
                 stmt.deinit(self.allocator);
@@ -1645,7 +1645,7 @@ pub const Parser = struct {
             body.deinit(self.allocator);
         }
 
-        var else_body = std.ArrayList(*nodes.Stmt){};
+        var else_body = std.ArrayList(*nodes.Stmt).empty;
         errdefer {
             for (else_body.items) |stmt| {
                 stmt.deinit(self.allocator);
@@ -1936,7 +1936,7 @@ pub const Parser = struct {
         _ = self.stream.next();
 
         // Parse block body (statements until {% endblock %})
-        var body = std.ArrayList(*nodes.Stmt){};
+        var body = std.ArrayList(*nodes.Stmt).empty;
         errdefer {
             for (body.items) |stmt| {
                 stmt.deinit(self.allocator);
@@ -2151,7 +2151,7 @@ pub const Parser = struct {
         self.skipWhitespace();
 
         // Parse import list
-        var imports = std.ArrayList([]const u8){};
+        var imports = std.ArrayList([]const u8).empty;
         errdefer {
             for (imports.items) |import_name| {
                 self.allocator.free(import_name);
@@ -2251,7 +2251,7 @@ pub const Parser = struct {
         self.skipWhitespace();
 
         // Parse macro arguments (optional)
-        var args = std.ArrayList(nodes.MacroArg){};
+        var args = std.ArrayList(nodes.MacroArg).empty;
         errdefer {
             for (args.items) |*arg| {
                 arg.deinit(self.allocator);
@@ -2338,7 +2338,7 @@ pub const Parser = struct {
         _ = self.stream.next();
 
         // Parse macro body (statements until {% endmacro %})
-        var body = std.ArrayList(*nodes.Stmt){};
+        var body = std.ArrayList(*nodes.Stmt).empty;
         errdefer {
             for (body.items) |stmt| {
                 stmt.deinit(self.allocator);
@@ -2438,7 +2438,7 @@ pub const Parser = struct {
         self.skipWhitespace();
 
         // Parse arguments (optional)
-        var args = std.ArrayList(nodes.Expression){};
+        var args = std.ArrayList(nodes.Expression).empty;
         errdefer {
             for (args.items) |*arg| {
                 arg.deinit(self.allocator);
@@ -2633,7 +2633,7 @@ pub const Parser = struct {
                     _ = self.stream.next();
 
                     // Parse block body
-                    var body = std.ArrayList(*nodes.Stmt){};
+                    var body = std.ArrayList(*nodes.Stmt).empty;
                     errdefer {
                         for (body.items) |stmt| {
                             stmt.deinit(self.allocator);
@@ -2792,7 +2792,7 @@ pub const Parser = struct {
         }
 
         // Parse with body (statements until {% endwith %})
-        var body = std.ArrayList(*nodes.Stmt){};
+        var body = std.ArrayList(*nodes.Stmt).empty;
         errdefer {
             for (body.items) |stmt| {
                 stmt.deinit(self.allocator);
@@ -2865,7 +2865,7 @@ pub const Parser = struct {
         _ = self.stream.next();
 
         // Parse filter block body (statements until {% endfilter %})
-        var body = std.ArrayList(*nodes.Stmt){};
+        var body = std.ArrayList(*nodes.Stmt).empty;
         errdefer {
             for (body.items) |stmt| {
                 stmt.deinit(self.allocator);
@@ -2941,7 +2941,7 @@ pub const Parser = struct {
         _ = self.stream.next();
 
         // Parse autoescape block body (statements until {% endautoescape %})
-        var body = std.ArrayList(*nodes.Stmt){};
+        var body = std.ArrayList(*nodes.Stmt).empty;
         errdefer {
             for (body.items) |stmt| {
                 stmt.deinit(self.allocator);
@@ -3017,7 +3017,7 @@ pub const Parser = struct {
         _ = self.stream.next();
 
         // Parse call block body (statements until {% endcall %})
-        var body = std.ArrayList(*nodes.Stmt){};
+        var body = std.ArrayList(*nodes.Stmt).empty;
         errdefer {
             for (body.items) |stmt| {
                 stmt.deinit(self.allocator);
@@ -3110,8 +3110,8 @@ pub const Parser = struct {
 
         // Parse body (statements until {% endif %} or {% elif %} or {% else %})
         // We track the main if body separately from the current parsing body
-        var if_body = std.ArrayList(*nodes.Stmt){};
-        var body = std.ArrayList(*nodes.Stmt){}; // Current body being parsed
+        var if_body = std.ArrayList(*nodes.Stmt).empty;
+        var body = std.ArrayList(*nodes.Stmt).empty; // Current body being parsed
         errdefer {
             for (if_body.items) |stmt| {
                 stmt.deinit(self.allocator);
@@ -3123,9 +3123,9 @@ pub const Parser = struct {
             body.deinit(self.allocator);
         }
 
-        var elif_conditions = std.ArrayList(nodes.Expression){};
-        var elif_bodies = std.ArrayList(std.ArrayList(*nodes.Stmt)){};
-        var else_body = std.ArrayList(*nodes.Stmt){};
+        var elif_conditions = std.ArrayList(nodes.Expression).empty;
+        var elif_bodies = std.ArrayList(std.ArrayList(*nodes.Stmt)).empty;
+        var else_body = std.ArrayList(*nodes.Stmt).empty;
         var has_else = false;
         var if_body_saved = false; // Track if if_body has been saved
 
@@ -3196,13 +3196,13 @@ pub const Parser = struct {
                                     try if_body.append(self.allocator, stmt);
                                 }
                                 body.deinit(self.allocator);
-                                body = std.ArrayList(*nodes.Stmt){};
+                                body = std.ArrayList(*nodes.Stmt).empty;
                                 if_body_saved = true;
                             } else {
                                 // Save current body as elif body
                                 try elif_bodies.append(self.allocator, body);
                                 // Start new body for next elif
-                                body = std.ArrayList(*nodes.Stmt){};
+                                body = std.ArrayList(*nodes.Stmt).empty;
                             }
 
                             try elif_conditions.append(self.allocator, elif_condition);
@@ -3231,7 +3231,7 @@ pub const Parser = struct {
                             }
 
                             // Start new body for else
-                            body = std.ArrayList(*nodes.Stmt){};
+                            body = std.ArrayList(*nodes.Stmt).empty;
                             has_else = true;
                         }
                         // If it's neither ENDIF, ELIF, nor ELSE, fall through to parse the statement
@@ -3283,7 +3283,7 @@ pub const Parser = struct {
         }
 
         for (elif_bodies.items) |*elif_body| {
-            var new_body = std.ArrayList(*nodes.Stmt){};
+            var new_body = std.ArrayList(*nodes.Stmt).empty;
             for (elif_body.items) |stmt| {
                 try new_body.append(self.allocator, stmt);
             }

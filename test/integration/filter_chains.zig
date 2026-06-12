@@ -6,15 +6,13 @@ const runtime = vibe_jinja.runtime;
 const context = vibe_jinja.context;
 
 test "filter chain basic" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{{ text | upper | reverse }}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer {
         var iter = vars.iterator();
@@ -42,15 +40,13 @@ test "filter chain basic" {
 }
 
 test "filter chain with arguments" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{{ text | replace('world', 'zig') | upper }}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer {
         var iter = vars.iterator();
@@ -78,15 +74,13 @@ test "filter chain with arguments" {
 }
 
 test "filter chain multiple filters" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{{ text | trim | upper | reverse }}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer {
         var iter = vars.iterator();
@@ -114,15 +108,13 @@ test "filter chain multiple filters" {
 }
 
 test "filter with default argument" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{{ value | default('N/A') | upper }}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer {
         var iter = vars.iterator();
@@ -151,16 +143,14 @@ test "filter with default argument" {
 }
 
 test "filter error handling" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     // Filter that might error (e.g., division by zero)
     const source = "{{ value | default('safe') }}";
-    
+
     var vars = std.StringHashMap(context.Value).init(allocator);
     defer {
         var iter = vars.iterator();
@@ -188,19 +178,17 @@ test "filter error handling" {
 }
 
 test "filter with list operations" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
 
     const source = "{{ items | length | string }}";
-    
+
     const list = try allocator.create(vibe_jinja.value.List);
     list.* = vibe_jinja.value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     try list.append(vibe_jinja.value.Value{ .integer = 1 });
     try list.append(vibe_jinja.value.Value{ .integer = 2 });
     try list.append(vibe_jinja.value.Value{ .integer = 3 });

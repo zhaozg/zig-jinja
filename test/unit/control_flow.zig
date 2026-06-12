@@ -6,9 +6,7 @@ const runtime = vibe_jinja.runtime;
 const value = vibe_jinja.value;
 
 test "for loop basic" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -17,16 +15,16 @@ test "for loop basic" {
     defer rt.deinit();
 
     const source = "{% for item in items %}{{ item }}{% endfor %}";
-    
+
     // Create list value
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     try list.append(value.Value{ .string = try allocator.dupe(u8, "a") });
     try list.append(value.Value{ .string = try allocator.dupe(u8, "b") });
     try list.append(value.Value{ .string = try allocator.dupe(u8, "c") });
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const items_key = try allocator.dupe(u8, "items");
@@ -40,9 +38,7 @@ test "for loop basic" {
 }
 
 test "for loop with else clause" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -51,12 +47,12 @@ test "for loop with else clause" {
     defer rt.deinit();
 
     const source = "{% for item in items %}{{ item }}{% else %}empty{% endfor %}";
-    
+
     // Create empty list
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const items_key = try allocator.dupe(u8, "items");
@@ -70,9 +66,7 @@ test "for loop with else clause" {
 }
 
 test "for loop with loop.index" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -81,15 +75,15 @@ test "for loop with loop.index" {
     defer rt.deinit();
 
     const source = "{% for item in items %}{{ loop.index }}{% endfor %}";
-    
+
     // Create list value
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     try list.append(value.Value{ .string = try allocator.dupe(u8, "a") });
     try list.append(value.Value{ .string = try allocator.dupe(u8, "b") });
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const items_key = try allocator.dupe(u8, "items");
@@ -103,9 +97,7 @@ test "for loop with loop.index" {
 }
 
 test "for loop with loop.first and loop.last" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -114,15 +106,15 @@ test "for loop with loop.first and loop.last" {
     defer rt.deinit();
 
     const source = "{% for item in items %}{% if loop.first %}F{% endif %}{% if loop.last %}L{% endif %}{% endfor %}";
-    
+
     // Create list value
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     try list.append(value.Value{ .string = try allocator.dupe(u8, "a") });
     try list.append(value.Value{ .string = try allocator.dupe(u8, "b") });
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const items_key = try allocator.dupe(u8, "items");
@@ -136,9 +128,7 @@ test "for loop with loop.first and loop.last" {
 }
 
 test "if statement basic" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -147,7 +137,7 @@ test "if statement basic" {
     defer rt.deinit();
 
     const source = "{% if condition %}yes{% endif %}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const condition_key = try allocator.dupe(u8, "condition");
@@ -161,9 +151,7 @@ test "if statement basic" {
 }
 
 test "if statement with else" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -172,7 +160,7 @@ test "if statement with else" {
     defer rt.deinit();
 
     const source = "{% if condition %}yes{% else %}no{% endif %}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const condition_key = try allocator.dupe(u8, "condition");
@@ -186,9 +174,7 @@ test "if statement with else" {
 }
 
 test "if statement with elif" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -197,7 +183,7 @@ test "if statement with elif" {
     defer rt.deinit();
 
     const source = "{% if x == 1 %}one{% elif x == 2 %}two{% else %}other{% endif %}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const x_key = try allocator.dupe(u8, "x");
@@ -211,9 +197,7 @@ test "if statement with elif" {
 }
 
 test "conditional expression" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -222,7 +206,7 @@ test "conditional expression" {
     defer rt.deinit();
 
     const source = "{{ 'yes' if condition else 'no' }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const condition_key = try allocator.dupe(u8, "condition");
@@ -236,9 +220,7 @@ test "conditional expression" {
 }
 
 test "conditional expression false" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -247,7 +229,7 @@ test "conditional expression false" {
     defer rt.deinit();
 
     const source = "{{ 'yes' if condition else 'no' }}";
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const condition_key = try allocator.dupe(u8, "condition");
@@ -261,9 +243,7 @@ test "conditional expression false" {
 }
 
 test "for loop with break" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -272,16 +252,16 @@ test "for loop with break" {
     defer rt.deinit();
 
     const source = "{% for item in items %}{{ item }}{% if item == 'b' %}{% break %}{% endif %}{% endfor %}";
-    
+
     // Create list value
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     try list.append(value.Value{ .string = try allocator.dupe(u8, "a") });
     try list.append(value.Value{ .string = try allocator.dupe(u8, "b") });
     try list.append(value.Value{ .string = try allocator.dupe(u8, "c") });
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const items_key = try allocator.dupe(u8, "items");
@@ -295,9 +275,7 @@ test "for loop with break" {
 }
 
 test "for loop with continue" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -306,16 +284,16 @@ test "for loop with continue" {
     defer rt.deinit();
 
     const source = "{% for item in items %}{% if item == 'b' %}{% continue %}{% endif %}{{ item }}{% endfor %}";
-    
+
     // Create list value
     const list = try allocator.create(value.List);
     list.* = value.List.init(allocator);
     defer list.deinit(allocator);
-    
+
     try list.append(value.Value{ .string = try allocator.dupe(u8, "a") });
     try list.append(value.Value{ .string = try allocator.dupe(u8, "b") });
     try list.append(value.Value{ .string = try allocator.dupe(u8, "c") });
-    
+
     var vars = std.StringHashMap(value.Value).init(allocator);
     defer vars.deinit();
     const items_key = try allocator.dupe(u8, "items");

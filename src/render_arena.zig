@@ -37,7 +37,7 @@ pub const RenderArena = struct {
 
         // Pre-allocate output buffer with estimated size
         const output = std.ArrayList(u8).initCapacity(arena_alloc, estimated_output_size) catch
-            std.ArrayList(u8){};
+            std.ArrayList(u8).empty;
 
         return Self{
             .arena = arena,

@@ -8,9 +8,7 @@ const nodes = vibe_jinja.nodes;
 const value = vibe_jinja.value;
 
 test "visit string literal" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -42,9 +40,7 @@ test "visit string literal" {
 }
 
 test "visit integer literal" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -76,9 +72,7 @@ test "visit integer literal" {
 }
 
 test "visit boolean literal" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -110,9 +104,7 @@ test "visit boolean literal" {
 }
 
 test "visit name expression resolves variable" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -153,9 +145,7 @@ test "visit name expression resolves variable" {
 }
 
 test "visit binary addition expression" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -201,9 +191,7 @@ test "visit binary addition expression" {
 }
 
 test "visit output statement with plain text" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -233,9 +221,7 @@ test "visit output statement with plain text" {
 }
 
 test "renderWithOptions basic rendering" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     // Note: env.deinit() will clean up cached templates
@@ -273,9 +259,7 @@ test "renderWithOptions basic rendering" {
 }
 
 test "renderWithOptions with timeout succeeds for quick templates" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     // Note: env.deinit() will clean up cached templates

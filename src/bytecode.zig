@@ -881,14 +881,14 @@ pub const BytecodeGenerator = struct {
             .getitem => |item| {
                 // Generate object expression
                 try self.generateExpression(item.node);
-                
+
                 // Check if this is a slice expression
                 if (item.arg == .slice) {
                     const slice = item.arg.slice;
                     // Encode which parts are present in the operand
                     // bit 0 = has start, bit 1 = has stop, bit 2 = has step
                     var flags: u32 = 0;
-                    
+
                     if (slice.start) |start| {
                         try self.generateExpression(start);
                         flags |= 1;
@@ -901,7 +901,7 @@ pub const BytecodeGenerator = struct {
                         try self.generateExpression(step);
                         flags |= 4;
                     }
-                    
+
                     try self.bytecode.addInstruction(.GET_SLICE, flags);
                 } else {
                     // Generate key/index expression
@@ -1812,7 +1812,7 @@ pub const BytecodeVM = struct {
                     }
 
                     // Collect elements from stack (in reverse order)
-                    var temp = std.ArrayList(Value){};
+                    var temp = std.ArrayList(Value).empty;
                     defer temp.deinit(self.allocator);
                     var i: u32 = 0;
                     while (i < count) : (i += 1) {
@@ -1832,7 +1832,7 @@ pub const BytecodeVM = struct {
                 .CALL_FUNC => {
                     // Generic function call - pop function and args
                     const arg_count = instr.operand;
-                    
+
                     // Pop arguments from stack (in reverse order)
                     var args = try self.allocator.alloc(Value, arg_count);
                     defer {
@@ -1846,11 +1846,11 @@ pub const BytecodeVM = struct {
                         call_i -= 1;
                         args[call_i] = self.stack.pop() orelse Value{ .null = {} };
                     }
-                    
+
                     // Pop function value
                     const func_val = self.stack.pop() orelse Value{ .null = {} };
                     defer func_val.deinit(self.allocator);
-                    
+
                     // Call callable if it has a function pointer
                     if (func_val == .callable) {
                         if (func_val.callable.func) |func| {
@@ -1869,9 +1869,9 @@ pub const BytecodeVM = struct {
                     // Call a global function by name
                     const name_idx = instr.operand & 0xFFFF;
                     const arg_count = instr.operand >> 16;
-                    
+
                     const func_name = self.bytecode.names.items[@as(usize, @intCast(name_idx))];
-                    
+
                     // First check if it's a macro (takes priority)
                     if (self.runtime_macros.get(func_name)) |_| {
                         // It's a macro - execute it
@@ -1895,7 +1895,7 @@ pub const BytecodeVM = struct {
                             global_i -= 1;
                             args[global_i] = self.stack.pop() orelse Value{ .null = {} };
                         }
-                        
+
                         if (self.environment.getGlobal(func_name)) |global_val| {
                             if (global_val == .callable) {
                                 if (global_val.callable.func) |func| {
@@ -1935,12 +1935,12 @@ pub const BytecodeVM = struct {
                     // Slice operation: obj[start:stop:step]
                     // Operand encodes which parts are present: bit 0=start, bit 1=stop, bit 2=step
                     const flags = instr.operand;
-                    
+
                     // Pop slice components in reverse order of how they were pushed
                     var step_val: ?i64 = null;
                     var stop_val: ?i64 = null;
                     var start_val: ?i64 = null;
-                    
+
                     if (flags & 4 != 0) {
                         const step = self.stack.pop() orelse Value{ .null = {} };
                         defer step.deinit(self.allocator);
@@ -1956,15 +1956,15 @@ pub const BytecodeVM = struct {
                         defer start.deinit(self.allocator);
                         start_val = start.toInteger();
                     }
-                    
+
                     const obj = self.stack.pop() orelse Value{ .null = {} };
                     defer obj.deinit(self.allocator);
-                    
+
                     const step: i64 = step_val orelse 1;
                     if (step == 0) {
                         return exceptions.TemplateError.RuntimeError;
                     }
-                    
+
                     const result = try self.executeSlice(obj, start_val, stop_val, step);
                     try self.stack.append(self.allocator, result);
                 },
@@ -1974,7 +1974,7 @@ pub const BytecodeVM = struct {
                     if (arg_count == 0) {
                         return exceptions.TemplateError.TypeError;
                     }
-                    
+
                     // Pop arguments from stack (in reverse order)
                     var args = try self.allocator.alloc(Value, arg_count);
                     defer self.allocator.free(args);
@@ -1988,7 +1988,7 @@ pub const BytecodeVM = struct {
                             arg.deinit(self.allocator);
                         }
                     }
-                    
+
                     // Get current loop index
                     const idx: usize = @intCast(@mod(self.loop_index0, @as(i64, @intCast(arg_count))));
                     const result = try args[idx].deepCopy(self.allocator);
@@ -1997,7 +1997,7 @@ pub const BytecodeVM = struct {
                 .LOOP_CHANGED => {
                     // loop.changed(args) - return true if args hash differs from last call
                     const arg_count = instr.operand;
-                    
+
                     // Pop arguments and compute hash
                     var hash: u64 = 0;
                     var changed_j: u32 = 0;
@@ -2006,12 +2006,12 @@ pub const BytecodeVM = struct {
                         defer arg.deinit(self.allocator);
                         hash = hash *% 31 +% computeValueHashBytecode(arg);
                     }
-                    
+
                     const changed = if (self.last_changed_hash) |last_hash|
                         hash != last_hash
                     else
                         true;
-                    
+
                     self.last_changed_hash = hash;
                     try self.stack.append(self.allocator, Value{ .boolean = changed });
                 },
@@ -2277,7 +2277,7 @@ pub const BytecodeVM = struct {
                         pc = caller_info.start_pc;
 
                         // Execute caller body until RETURN or caller_end
-                        var caller_result = std.ArrayList(u8){};
+                        var caller_result = std.ArrayList(u8).empty;
                         defer caller_result.deinit(self.allocator);
 
                         while (pc < caller_info.end_pc and pc < self.bytecode.instructions.items.len) {
@@ -2505,7 +2505,7 @@ pub const BytecodeVM = struct {
 
         // First, collect remaining kwargs and move to dict
         // Dict.set duplicates keys, so we move values but need to free original keys
-        var keys_to_free = std.ArrayList([]const u8){};
+        var keys_to_free = std.ArrayList([]const u8).empty;
         defer keys_to_free.deinit(self.allocator);
 
         var remaining_iter = kwargs_map.iterator();
@@ -2532,7 +2532,7 @@ pub const BytecodeVM = struct {
         // Execute macro body using the main execution logic
         // We save and restore the result buffer to capture macro output
         const saved_result = self.result;
-        self.result = std.ArrayList(u8){};
+        self.result = std.ArrayList(u8).empty;
 
         var macro_pc = macro_info.body_start;
         while (macro_pc < macro_info.body_end and macro_pc < self.bytecode.instructions.items.len) {
@@ -2784,7 +2784,7 @@ pub const BytecodeVM = struct {
                         const saved_macro_pc = macro_pc;
                         var caller_pc = caller_info.start_pc;
 
-                        var caller_output = std.ArrayList(u8){};
+                        var caller_output = std.ArrayList(u8).empty;
                         while (caller_pc < caller_info.end_pc) {
                             const caller_instr = self.bytecode.instructions.items[@as(usize, @intCast(caller_pc))];
                             caller_pc += 1;
@@ -2911,7 +2911,7 @@ pub const BytecodeVM = struct {
                 const normalized_start = normalizeSliceIndex(start_val, len, step, true);
                 const normalized_stop = normalizeSliceIndex(stop_val, len, step, false);
 
-                var result_builder = std.ArrayList(u8){};
+                var result_builder = std.ArrayList(u8).empty;
                 errdefer result_builder.deinit(self.allocator);
 
                 var i = normalized_start;
@@ -3463,7 +3463,7 @@ pub const BytecodeVM = struct {
                     }
 
                     // Collect elements from stack (in reverse order)
-                    var temp = std.ArrayList(Value){};
+                    var temp = std.ArrayList(Value).empty;
                     defer temp.deinit(self.allocator);
                     var i: u32 = 0;
                     while (i < count) : (i += 1) {

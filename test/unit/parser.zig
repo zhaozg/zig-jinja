@@ -7,9 +7,7 @@ const lexer = vibe_jinja.lexer;
 const nodes = vibe_jinja.nodes;
 
 test "parse plain text" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -34,9 +32,7 @@ test "parse plain text" {
 }
 
 test "parse string literal expression" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -62,9 +58,7 @@ test "parse string literal expression" {
 }
 
 test "parse integer literal expression" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -92,9 +86,7 @@ test "parse integer literal expression" {
 }
 
 test "parse boolean literal expression" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -122,9 +114,7 @@ test "parse boolean literal expression" {
 }
 
 test "parse name expression" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -152,9 +142,7 @@ test "parse name expression" {
 }
 
 test "parse binary addition expression" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -182,9 +170,7 @@ test "parse binary addition expression" {
 }
 
 test "parse filter expression" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -212,9 +198,7 @@ test "parse filter expression" {
 }
 
 test "parse comment" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -236,9 +220,7 @@ test "parse comment" {
 }
 
 test "parse autoescape block" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.testing.allocator;
 
     var env = environment.Environment.init(allocator);
     defer env.deinit();
@@ -259,14 +241,14 @@ test "parse autoescape block" {
     try testing.expect(template.body.items.len == 1);
     const stmt = template.body.items[0];
     try testing.expect(stmt.tag == .autoescape);
-    
+
     // Cast to Autoescape to check internals
     const autoescape_stmt = @as(*nodes.Autoescape, @ptrCast(@alignCast(stmt)));
-    
+
     // Check that the enabled expression is a boolean literal (true)
     try testing.expect(autoescape_stmt.enabled == .boolean_literal);
     try testing.expect(autoescape_stmt.enabled.boolean_literal.value == true);
-    
+
     // Check that body has one item (the "Hello" text)
     try testing.expect(autoescape_stmt.body.items.len == 1);
 }
