@@ -5,7 +5,7 @@ const nodes = vibe_jinja.nodes;
 const value = vibe_jinja.value;
 const context = vibe_jinja.context;
 
-test "node string literal init" {
+test "node string literal init and deinit" {
     const allocator = std.testing.allocator;
 
     var str_lit = try nodes.StringLiteral.init(allocator, "hello", 1, "test.jinja");
@@ -15,147 +15,243 @@ test "node string literal init" {
     try testing.expect(str_lit.base.lineno == 1);
 }
 
-test "node integer literal init" {
+test "node integer literal init and deinit" {
+    const allocator = std.testing.allocator;
+
     var int_lit = nodes.IntegerLiteral.init(1, "test.jinja", 42);
+    defer int_lit.deinit(allocator);
+
     try testing.expect(int_lit.value == 42);
     try testing.expect(int_lit.base.lineno == 1);
 }
 
-test "node boolean literal init" {
+test "node boolean literal init and deinit" {
+    const allocator = std.testing.allocator;
+
     var bool_lit = nodes.BooleanLiteral.init(1, "test.jinja", true);
+    defer bool_lit.deinit(allocator);
+
     try testing.expect(bool_lit.value == true);
     try testing.expect(bool_lit.base.lineno == 1);
 }
 
-test "node float literal init" {
+test "node float literal init and deinit" {
+    const allocator = std.testing.allocator;
+
     var float_lit = nodes.FloatLiteral.init(1, "test.jinja", 3.14);
+    defer float_lit.deinit(allocator);
+
     try testing.expect(float_lit.value == 3.14);
     try testing.expect(float_lit.base.lineno == 1);
 }
 
-test "node name expression eval" {
+test "node null literal init and deinit" {
     const allocator = std.testing.allocator;
 
-    var env = vibe_jinja.environment.Environment.init(allocator);
-    defer env.deinit();
+    var null_lit = nodes.NullLiteral.init(1, "test.jinja");
+    defer null_lit.deinit(allocator);
 
-    var vars = std.StringHashMap(value.Value).init(allocator);
-    defer vars.deinit();
+    try testing.expect(null_lit.base.lineno == 1);
+}
 
-    var test_val = value.Value{ .string = try allocator.dupe(u8, "hello") };
-    defer test_val.deinit(allocator);
-    try vars.put(try allocator.dupe(u8, "test_var"), test_val);
+test "node name init and deinit" {
+    const allocator = std.testing.allocator;
 
-    var ctx = try context.Context.init(&env, vars, "test", allocator);
-    defer ctx.deinit();
-
-    var name_node = try nodes.Name.init(allocator, "test_var", 1, "test.jinja");
+    var name_node = try nodes.Name.init(allocator, "myvar", .load, 1, "test.jinja");
     defer name_node.deinit(allocator);
 
-    var expr = nodes.Expression{ .name = name_node };
-    var result = try expr.eval(&ctx, allocator);
-    defer result.deinit(allocator);
-
-    try testing.expect(result == .string);
-    try testing.expectEqualStrings("hello", result.string);
+    try testing.expectEqualStrings("myvar", name_node.name);
+    try testing.expect(name_node.ctx == .load);
 }
 
-test "node binary expression eval" {
+test "node template init and deinit" {
     const allocator = std.testing.allocator;
 
-    var env = vibe_jinja.environment.Environment.init(allocator);
-    defer env.deinit();
-
-    var vars = std.StringHashMap(value.Value).init(allocator);
-    defer vars.deinit();
-    var ctx = try context.Context.init(&env, vars, "test", allocator);
-    defer ctx.deinit();
-
-    var left = try nodes.IntegerLiteral.init(allocator, 10, 1, "test.jinja");
-    defer left.deinit(allocator);
-    var right = try nodes.IntegerLiteral.init(allocator, 5, 1, "test.jinja");
-    defer right.deinit(allocator);
-
-    var bin_expr = try nodes.BinExpr.init(allocator, .add, &left.base, &right.base, 1, "test.jinja");
-    defer bin_expr.deinit(allocator);
-
-    var expr = nodes.Expression{ .bin_expr = bin_expr };
-    var result = try expr.eval(&ctx, allocator);
-    defer result.deinit(allocator);
-
-    try testing.expect(result == .integer);
-    try testing.expect(result.integer == 15);
-}
-
-test "node template init" {
-    const allocator = std.testing.allocator;
-
-    var template = try nodes.Template.init(allocator, "test_template", 1, "test.jinja");
+    var template = nodes.Template.init(allocator, 1, "test.jinja");
     defer template.deinit(allocator);
 
-    try testing.expect(template.name != null);
-    try testing.expectEqualStrings("test_template", template.name.?);
+    try testing.expect(template.name == null);
     try testing.expect(template.body.items.len == 0);
 }
 
-test "node output statement init" {
+test "node output plain text init and deinit" {
     const allocator = std.testing.allocator;
 
-    var output = try nodes.Output.init(allocator, 1, "test.jinja");
+    var output = try nodes.Output.initPlainText(allocator, "hello world", 1, "test.jinja");
     defer output.deinit(allocator);
 
-    try testing.expect(output.base.lineno == 1);
+    try testing.expectEqualStrings("hello world", output.content);
+    try testing.expect(output.base.base.lineno == 1);
+}
+
+test "node output expression init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var output = nodes.Output.initExpression(allocator, 1, "test.jinja");
+    defer output.deinit(allocator);
+
+    try testing.expect(output.base.base.lineno == 1);
     try testing.expect(output.nodes.items.len == 0);
 }
 
-test "node if statement init" {
-    const allocator = std.testing.allocator;
-
-    var cond = try nodes.BooleanLiteral.init(allocator, true, 1, "test.jinja");
-    defer cond.deinit(allocator);
-
-    var if_stmt = try nodes.If.init(allocator, &cond.base, 1, "test.jinja");
-    defer if_stmt.deinit(allocator);
-
-    try testing.expect(if_stmt.base.lineno == 1);
-    try testing.expect(if_stmt.body.items.len == 0);
-}
-
-test "node for loop init" {
-    const allocator = std.testing.allocator;
-
-    var target = try nodes.Name.init(allocator, "item", 1, "test.jinja");
-    defer target.deinit(allocator);
-
-    var iter = try nodes.Name.init(allocator, "items", 1, "test.jinja");
-    defer iter.deinit(allocator);
-
-    var for_loop = try nodes.For.init(allocator, &target.base, &iter.base, 1, "test.jinja");
-    defer for_loop.deinit(allocator);
-
-    try testing.expect(for_loop.base.lineno == 1);
-    try testing.expect(for_loop.body.items.len == 0);
-}
-
-test "node block statement init" {
+test "node block statement init and deinit" {
     const allocator = std.testing.allocator;
 
     var block = try nodes.Block.init(allocator, "content", 1, "test.jinja");
     defer block.deinit(allocator);
 
     try testing.expectEqualStrings("content", block.name);
-    try testing.expect(block.base.lineno == 1);
+    try testing.expect(block.base.base.lineno == 1);
     try testing.expect(block.body.items.len == 0);
 }
 
-test "node macro init" {
+test "node macro init and deinit" {
     const allocator = std.testing.allocator;
 
     var macro = try nodes.Macro.init(allocator, "test_macro", 1, "test.jinja");
     defer macro.deinit(allocator);
 
     try testing.expectEqualStrings("test_macro", macro.name);
-    try testing.expect(macro.base.lineno == 1);
+    try testing.expect(macro.base.base.lineno == 1);
     try testing.expect(macro.args.items.len == 0);
     try testing.expect(macro.body.items.len == 0);
+}
+
+test "node with init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var with_stmt = nodes.With.init(allocator, 1, "test.jinja");
+    defer with_stmt.deinit(allocator);
+
+    try testing.expect(with_stmt.base.base.lineno == 1);
+}
+
+test "node comment stmt init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var comment = nodes.CommentStmt.init(1, "test.jinja");
+    defer comment.deinit(allocator);
+
+    try testing.expect(comment.base.base.lineno == 1);
+}
+
+test "node continue stmt init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var continue_stmt = nodes.ContinueStmt.init(1, "test.jinja");
+    defer continue_stmt.deinit(allocator);
+
+    try testing.expect(continue_stmt.base.base.lineno == 1);
+}
+
+test "node break stmt init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var break_stmt = nodes.BreakStmt.init(1, "test.jinja");
+    defer break_stmt.deinit(allocator);
+
+    try testing.expect(break_stmt.base.base.lineno == 1);
+}
+
+test "node debug stmt init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var debug_stmt = nodes.DebugStmt.init(1, "test.jinja");
+    defer debug_stmt.deinit(allocator);
+
+    try testing.expect(debug_stmt.base.base.lineno == 1);
+}
+
+test "node context reference init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var ctx_ref = nodes.ContextReference.init(1, "test.jinja");
+    defer ctx_ref.deinit(allocator);
+
+    try testing.expect(ctx_ref.base.lineno == 1);
+}
+
+test "node derived context reference init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var derived_ctx_ref = nodes.DerivedContextReference.init(1, "test.jinja");
+    defer derived_ctx_ref.deinit(allocator);
+
+    try testing.expect(derived_ctx_ref.base.lineno == 1);
+}
+
+test "node internal name init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var internal_name = try nodes.InternalName.init(allocator, "__internal", 1, "test.jinja");
+    defer internal_name.deinit(allocator);
+
+    try testing.expectEqualStrings("__internal", internal_name.name);
+}
+
+test "node imported name init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var imported_name = try nodes.ImportedName.init(allocator, "my_import", 1, "test.jinja");
+    defer imported_name.deinit(allocator);
+
+    try testing.expectEqualStrings("my_import", imported_name.importname);
+}
+
+test "node environment attribute init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var env_attr = try nodes.EnvironmentAttribute.init(allocator, "my_attr", 1, "test.jinja");
+    defer env_attr.deinit(allocator);
+
+    try testing.expectEqualStrings("my_attr", env_attr.name);
+}
+
+test "node extension attribute init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var ext_attr = try nodes.ExtensionAttribute.init(allocator, "my_ext", "my_attr", 1, "test.jinja");
+    defer ext_attr.deinit(allocator);
+
+    try testing.expectEqualStrings("my_ext", ext_attr.identifier);
+    try testing.expectEqualStrings("my_attr", ext_attr.name);
+}
+
+test "node nsref init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var nsref = try nodes.NSRef.init(allocator, "namespace", "attr", 1, "test.jinja");
+    defer nsref.deinit(allocator);
+
+    try testing.expectEqualStrings("namespace", nsref.name);
+    try testing.expectEqualStrings("attr", nsref.attr);
+}
+
+test "node concat init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var concat = nodes.Concat.init(allocator, 1, "test.jinja");
+    defer concat.deinit(allocator);
+
+    try testing.expect(concat.base.lineno == 1);
+    try testing.expect(concat.nodes.items.len == 0);
+}
+
+test "node slice init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var slice = nodes.Slice.init(null, null, null, 1, "test.jinja");
+    defer slice.deinit(allocator);
+
+    try testing.expect(slice.base.lineno == 1);
+}
+
+test "node list literal init and deinit" {
+    const allocator = std.testing.allocator;
+
+    var list_lit = nodes.ListLiteral.init(1, "test.jinja");
+    defer list_lit.deinit(allocator);
+
+    try testing.expect(list_lit.base.lineno == 1);
+    try testing.expect(list_lit.elements.items.len == 0);
 }

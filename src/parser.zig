@@ -324,6 +324,7 @@ pub const Parser = struct {
         // Expect VARIABLE_END
         const end_token = self.stream.current();
         if (end_token == null or end_token.?.kind != .VARIABLE_END) {
+            expr.deinit(self.allocator);
             return exceptions.TemplateError.SyntaxError;
         }
         _ = self.stream.next();
@@ -439,13 +440,17 @@ pub const Parser = struct {
                     self.skipWhitespace();
 
                     // Parse condition
-                    const condition = try self.parseOr() orelse return exceptions.TemplateError.SyntaxError;
+                    const condition = try self.parseOr() orelse {
+                        left.deinit(self.allocator);
+                        return exceptions.TemplateError.SyntaxError;
+                    };
 
                     self.skipWhitespace();
 
                     // Expect 'else'
                     const else_token = self.stream.current();
                     if (else_token == null or else_token.?.kind != .ELSE) {
+                        left.deinit(self.allocator);
                         condition.deinit(self.allocator);
                         return exceptions.TemplateError.SyntaxError;
                     }
@@ -454,6 +459,7 @@ pub const Parser = struct {
 
                     // Parse false branch
                     const false_expr = try self.parseOr() orelse {
+                        left.deinit(self.allocator);
                         condition.deinit(self.allocator);
                         return exceptions.TemplateError.SyntaxError;
                     };
@@ -679,8 +685,12 @@ pub const Parser = struct {
                     self.skipWhitespace();
 
                     // Parse test name
-                    const test_token = self.stream.current() orelse return exceptions.TemplateError.SyntaxError;
+                    const test_token = self.stream.current() orelse {
+                        left.deinit(self.allocator);
+                        return exceptions.TemplateError.SyntaxError;
+                    };
                     if (test_token.kind != .NAME) {
+                        left.deinit(self.allocator);
                         return exceptions.TemplateError.SyntaxError;
                     }
                     const test_name = test_token.value;
@@ -719,7 +729,10 @@ pub const Parser = struct {
                                             continue;
                                         }
 
-                                        const arg_expr = try self.parseExpression() orelse return exceptions.TemplateError.SyntaxError;
+                                        const arg_expr = try self.parseExpression() orelse {
+                                            left.deinit(self.allocator);
+                                            return exceptions.TemplateError.SyntaxError;
+                                        };
                                         try test_args.append(self.allocator, arg_expr);
 
                                         self.skipWhitespace();
@@ -730,6 +743,7 @@ pub const Parser = struct {
                                                 break;
                                             }
                                             if (after.kind != .COMMA) {
+                                                left.deinit(self.allocator);
                                                 return exceptions.TemplateError.SyntaxError;
                                             }
                                         }
@@ -767,7 +781,7 @@ pub const Parser = struct {
                 if (t.kind == .PIPE) {
                     break;
                 }
-                if (t.kind == .ADD or t.kind == .SUB) {
+                if (t.kind == .ADD or t.kind == .SUB or t.kind == .TILDE) {
                     const op = t.kind;
                     _ = self.stream.next();
                     self.skipWhitespace();
@@ -897,7 +911,7 @@ pub const Parser = struct {
         if (self.stream.hasNext()) {
             const token = self.stream.current();
             if (token) |t| {
-                if (t.kind == .ADD or t.kind == .SUB or t.kind == .TILDE) {
+                if (t.kind == .ADD or t.kind == .SUB) {
                     const op = t.kind;
                     _ = self.stream.next();
                     self.skipWhitespace();

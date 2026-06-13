@@ -340,6 +340,30 @@ pub fn build(b: *std.Build) void {
     });
     const run_environment_tests = b.addRunArtifact(environment_tests);
 
+    // Node unit tests
+    const nodes_test_module = b.addModule("nodes_test", .{
+        .root_source_file = b.path("test/unit/nodes.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    nodes_test_module.addImport("vibe_jinja", root_module);
+    const nodes_tests = b.addTest(.{
+        .root_module = nodes_test_module,
+    });
+    const run_nodes_tests = b.addRunArtifact(nodes_tests);
+
+    // Memory leak reproduction tests (based on mem.md findings)
+    const memory_test_module = b.addModule("memory_test", .{
+        .root_source_file = b.path("test/unit/memory.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    memory_test_module.addImport("vibe_jinja", root_module);
+    const memory_tests = b.addTest(.{
+        .root_module = memory_test_module,
+    });
+    const run_memory_tests = b.addRunArtifact(memory_tests);
+
     const test_step = b.step("test", "Run all tests");
     test_step.dependOn(&run_lib_unit_tests.step);
     test_step.dependOn(&run_parser_tests.step);
@@ -367,6 +391,8 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_loaders_tests.step);
     test_step.dependOn(&run_extensions_tests.step);
     test_step.dependOn(&run_environment_tests.step);
+    test_step.dependOn(&run_nodes_tests.step);
+    test_step.dependOn(&run_memory_tests.step);
     test_step.dependOn(&run_async_tests.step);
 
     const unit_test_step = b.step("test:unit", "Run unit tests only");
@@ -389,6 +415,8 @@ pub fn build(b: *std.Build) void {
     unit_test_step.dependOn(&run_loaders_tests.step);
     unit_test_step.dependOn(&run_extensions_tests.step);
     unit_test_step.dependOn(&run_environment_tests.step);
+    unit_test_step.dependOn(&run_nodes_tests.step);
+    unit_test_step.dependOn(&run_memory_tests.step);
 
     const integration_test_step = b.step("test:integration", "Run integration tests only");
     integration_test_step.dependOn(&run_control_flow_tests.step);
@@ -530,4 +558,12 @@ pub fn build(b: *std.Build) void {
     const run_aot_bench = b.addRunArtifact(aot_bench);
     const aot_bench_step = b.step("bench-aot", "Run AOT vs JIT benchmark (Phase 7)");
     aot_bench_step.dependOn(&run_aot_bench.step);
+
+    // Node unit tests
+    const nodes_test_step = b.step("test:nodes", "Run node unit tests");
+    nodes_test_step.dependOn(&run_nodes_tests.step);
+
+    // Memory leak reproduction tests
+    const memory_test_step = b.step("test:memory", "Run memory leak reproduction tests");
+    memory_test_step.dependOn(&run_memory_tests.step);
 }

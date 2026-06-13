@@ -2264,6 +2264,7 @@ pub const Expression = union(enum) {
         return switch (node.op) {
             .ADD => evalPlus(left_val, right_val, allocator),
             .SUB => evalMinus(left_val, right_val, allocator),
+            .TILDE => evalPlus(left_val, right_val, allocator),
             .MUL => evalMul(left_val, right_val, allocator),
             .DIV => evalDiv(left_val, right_val, allocator),
             .FLOORDIV => evalFloorDiv(left_val, right_val, allocator),

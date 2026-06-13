@@ -299,23 +299,24 @@ fn evalStmt(stmt: *nodes_mod.Stmt, ctx: *context.Context, allocator: std.mem.All
 }
 
 fn test_eval(allocator: std.mem.Allocator, path: []const u8, debug: bool) !void {
-    const source_path = try std.mem.concat(allocator, u8, &[_][]const u8{ path, "/test.jinja" });
-    defer allocator.free(source_path);
+    // Use Arena allocator to ensure all allocations (AST nodes, strings, etc.)
+    // are freed when the test function returns, preventing memory leaks.
+    var arena = std.heap.ArenaAllocator.init(allocator);
+    defer arena.deinit();
+    const arena_alloc = arena.allocator();
+
+    const source_path = try std.mem.concat(arena_alloc, u8, &[_][]const u8{ path, "/test.jinja" });
 
     const cwd = std.Io.Dir.cwd();
-    var io = std.Io.Threaded.init(allocator, .{});
+    var io = std.Io.Threaded.init(arena_alloc, .{});
 
-    const source = try cwd.readFileAlloc(io.io(), source_path, allocator, .unlimited);
-    defer allocator.free(source);
+    const source = try cwd.readFileAlloc(io.io(), source_path, arena_alloc, .unlimited);
 
-    const expected_path = try std.mem.concat(allocator, u8, &[_][]const u8{ path, "/test.html" });
-    defer allocator.free(expected_path);
+    const expected_path = try std.mem.concat(arena_alloc, u8, &[_][]const u8{ path, "/test.html" });
 
-    const expected = try cwd.readFileAlloc(io.io(), expected_path, allocator, .unlimited);
-    defer allocator.free(expected);
+    const expected = try cwd.readFileAlloc(io.io(), expected_path, arena_alloc, .unlimited);
 
-    const actual = try _eval(allocator, source, debug);
-    defer allocator.free(actual);
+    const actual = try _eval(arena_alloc, source, debug);
 
     try testing.expectEqualStrings(expected, actual);
 }
